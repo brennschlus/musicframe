@@ -1,14 +1,7 @@
 #include "scene_model.h"
 #include "../image/image_texture.h"
-#include <string.h>
 
-// ---------------------------------------------------------------------------
-void scene_model_init(SceneModel* scene)
-{
-    memset(scene, 0, sizeof(SceneModel));
-    scene->selected_filter = FILTER_NONE;
-    scene->selected_frame  = 0;
-}
+
 
 // ---------------------------------------------------------------------------
 void scene_model_cleanup(SceneModel* scene)

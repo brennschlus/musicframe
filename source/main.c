@@ -30,15 +30,17 @@ int main(int argc, char* argv[])
     // Top screen: citro2d render target
     C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 
-    // --- Initialize application context ------------------------------------
-    AppContext ctx = {0};
-    ctx.running       = true;
-    ctx.current_state = STATE_NONE;
-    ctx.next_state    = STATE_MAIN_MENU;  // Start at main menu
-    ctx.top_target    = top;
+    AppContext ctx = {
+        .running       = true,
+        .current_state = STATE_NONE,
+        .next_state    = STATE_MAIN_MENU,
+        .top_target    = top,
 
-    // Initialize scene model
-    scene_model_init(&ctx.scene);
+        .scene = {
+            .selected_filter = FILTER_NONE,
+            .selected_frame  = 0,
+        }
+    };
 
     // Initialize NDSP
     Result ndsp_res = ndspInit();

@@ -25,9 +25,6 @@ typedef struct {
     bool              music_selected;  // Whether a music track is chosen
 } SceneModel;
 
-// Zero-initialize a scene
-void scene_model_init(SceneModel* scene);
-
 // Free all resources (image buffers + GPU texture)
 void scene_model_cleanup(SceneModel* scene);
 
