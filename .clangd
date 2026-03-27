@@ -1,0 +1,16 @@
+CompileFlags:
+  Add:
+    - -xc
+    - --target=arm-none-eabi
+    - -D__3DS__
+    - -I./include
+    - -I./build
+    - -I/opt/devkitpro/libctru/include
+    - -I/opt/devkitpro/portlibs/3ds/include
+    - -I/opt/devkitpro/devkitARM/arm-none-eabi/include
+    - -march=armv6k
+    - -mtune=mpcore
+    - -mfloat-abi=hard
+
+  Remove:
+    - -mtp=*
