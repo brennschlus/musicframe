@@ -1,0 +1,70 @@
+# ------------------------------
+# Build directories
+# ------------------------------
+/build/
+/out/
+/dist/
+
+# ------------------------------
+# 3DS build artifacts
+# ------------------------------
+*.3dsx
+*.cia
+*.cxi
+*.elf
+*.3ds
+*.smdh
+
+# ------------------------------
+# Object / intermediate files
+# ------------------------------
+*.o
+*.a
+*.so
+*.d
+
+# ------------------------------
+# devkitPro / makerom temp files
+# ------------------------------
+*.bss
+*.map
+*.lst
+
+# ------------------------------
+# CMake (if used)
+# ------------------------------
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# ------------------------------
+# Other build systems
+# ------------------------------
+*.ninja
+.ninja_log
+.ninja_deps
+
+# ------------------------------
+# Logs / debug
+# ------------------------------
+*.log
+
+# ------------------------------
+# OS / editor junk
+# ------------------------------
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# JetBrains
+.idea/
+
+# ------------------------------
+# Optional: generated assets
+# ------------------------------
+# Uncomment if you generate these
+# /romfs/
+# /gfx/
