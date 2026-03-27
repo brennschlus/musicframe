@@ -5,6 +5,7 @@
 #include <citro2d.h>
 #include "scene/scene_model.h"
 #include "audio/audio_player.h"
+#include "camera/hardware_camera.h"
 
 // ---------------------------------------------------------------------------
 // Application state identifiers
@@ -12,6 +13,7 @@
 typedef enum {
     STATE_NONE = 0,
     STATE_MAIN_MENU,
+    STATE_CAMERA_PREVIEW,
     STATE_PHOTO_REVIEW,
     STATE_FILTER_SELECT,
     STATE_FRAME_SELECT,
@@ -41,6 +43,9 @@ typedef struct {
 
     // Audio player
     AudioPlayer audio;
+
+    // Hardware camera
+    HardwareCamera camera;
 } AppContext;
 
 #endif // APP_CONTEXT_H

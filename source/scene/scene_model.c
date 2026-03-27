@@ -17,28 +17,17 @@ void scene_model_cleanup(SceneModel* scene)
 }
 
 // ---------------------------------------------------------------------------
-void scene_model_load_test_image(SceneModel* scene)
+void scene_model_set_photo(SceneModel* scene, ImageBuffer* photo)
 {
-    // Clean up any previous image
-    if (scene->photo_loaded) {
-        scene_model_cleanup(scene);
-    }
-
-    scene->original = image_buffer_create_test_pattern();
-    if (!scene->original) return;
-
-    scene->filtered = image_buffer_create(scene->original->width,
-                                          scene->original->height);
-    if (!scene->filtered) {
-        image_buffer_destroy(scene->original);
-        scene->original = NULL;
-        return;
-    }
-
-    scene->photo_loaded    = true;
+    if (!photo) return;
+    scene_model_cleanup(scene);
+    
+    scene->original = photo;
+    scene->filtered = image_buffer_create(photo->width, photo->height);
+    scene->photo_loaded = true;
     scene->selected_filter = FILTER_NONE;
+    scene->selected_frame  = 0;
 
-    // Apply initial filter (none = copy) and upload to GPU
     scene_model_apply_filter(scene);
 }
 

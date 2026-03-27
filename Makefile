@@ -18,7 +18,7 @@ APP_AUTHOR      := musicframe
 
 TARGET          := musicframe
 BUILD           := build
-SOURCES         := source source/state source/states source/image source/scene source/audio source/fs
+SOURCES         := source source/state source/states source/image source/scene source/audio source/fs source/camera
 DATA            := data
 INCLUDES        := include
 GRAPHICS        := gfx

@@ -46,7 +46,7 @@ static void main_menu_update(AppState* self, AppContext* ctx)
     u32 kDown = hidKeysDown();
 
     if (kDown & KEY_A) {
-        state_manager_transition(ctx, STATE_PHOTO_REVIEW);
+        state_manager_transition(ctx, STATE_CAMERA_PREVIEW);
     }
 
     if (kDown & KEY_START) {

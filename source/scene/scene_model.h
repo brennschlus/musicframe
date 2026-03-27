@@ -28,8 +28,8 @@ typedef struct {
 // Free all resources (image buffers + GPU texture)
 void scene_model_cleanup(SceneModel* scene);
 
-// Load a procedural test image into the scene
-void scene_model_load_test_image(SceneModel* scene);
+// Set a new photo, transferring ownership of the ImageBuffer to the scene
+void scene_model_set_photo(SceneModel* scene, ImageBuffer* photo);
 
 // Re-apply the current filter and re-upload texture
 void scene_model_apply_filter(SceneModel* scene);

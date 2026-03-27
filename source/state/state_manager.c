@@ -2,6 +2,7 @@
 
 // Include all concrete state headers
 #include "../states/state_main_menu.h"
+#include "../states/state_camera_preview.h"
 #include "../states/state_photo_review.h"
 #include "../states/state_filter_select.h"
 #include "../states/state_frame_select.h"
@@ -24,6 +25,7 @@ void state_manager_init(void)
 
     // Register concrete states
     s_states[STATE_MAIN_MENU]     = state_main_menu_create();
+    s_states[STATE_CAMERA_PREVIEW]= state_camera_preview_create();
     s_states[STATE_PHOTO_REVIEW]  = state_photo_review_create();
     s_states[STATE_FILTER_SELECT] = state_filter_select_create();
     s_states[STATE_FRAME_SELECT]  = state_frame_select_create();

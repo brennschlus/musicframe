@@ -20,11 +20,6 @@ static void photo_review_enter(AppState* self, AppContext* ctx)
 {
     (void)self;
 
-    // Load test image if not already loaded
-    if (!ctx->scene.photo_loaded) {
-        scene_model_load_test_image(&ctx->scene);
-    }
-
     consoleClear();
     printf("\x1b[1;1H");
     printf("===========================\n");
