@@ -132,7 +132,7 @@ static void music_select_render_top(AppState* self, AppContext* ctx, C3D_RenderT
         img.tex    = &ctx->scene.tex;
         img.subtex = &ctx->scene.subtex;
         C2D_DrawImageAt(img, x, y, 0.5f, NULL, 1.0f, 1.0f);
-        image_frame_draw(ctx->scene.selected_frame, x, y, img_w, img_h, 0.6f);
+        image_frame_draw(ctx->scene.selected_frame, x, y, img_w, img_h, 0.4f);
     }
 
     u32 clrAccent = C2D_Color32(0xE8, 0x6D, 0x50, 0xFF);

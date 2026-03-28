@@ -80,7 +80,7 @@ static void playback_view_render_top(AppState* self, AppContext* ctx, C3D_Render
         C2D_DrawImageAt(img, px, py, 0.5f, NULL, 1.0f, 1.0f);
 
         // Selected frame overlay
-        image_frame_draw(ctx->scene.selected_frame, px, py, img_w, img_h, 0.6f);
+        image_frame_draw(ctx->scene.selected_frame, px, py, img_w, img_h, 0.4f);
     }
 
     // Accent lines

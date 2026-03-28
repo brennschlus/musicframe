@@ -101,7 +101,7 @@ static void frame_select_render_top(AppState* self, AppContext* ctx, C3D_RenderT
         C2D_DrawImageAt(img, x, y, 0.5f, NULL, 1.0f, 1.0f);
 
         // Draw frame overlay on top
-        image_frame_draw(ctx->scene.selected_frame, x, y, img_w, img_h, 0.6f);
+        image_frame_draw(ctx->scene.selected_frame, x, y, img_w, img_h, 0.4f);
     }
 
     // Accent lines
