@@ -39,6 +39,8 @@ void hw_camera_get_frame_rgba8(HardwareCamera* cam, ImageBuffer* out_img);
 // Draw the camera preview on the top screen (raw RGB565 data)
 void hw_draw_camera_preview_top(const u16* src);
 
+bool hw_camera_capture_preview_frame(HardwareCamera* cam);
+
 // Play standard shutter sound
 void hw_camera_play_shutter(HardwareCamera* cam);
 

@@ -9,6 +9,7 @@
 #include <citro2d.h>
 
 #include "app_context.h"
+#include "c3d/framebuffer.h"
 #include "camera/hardware_camera.h"
 #include "state/state_manager.h"
 
