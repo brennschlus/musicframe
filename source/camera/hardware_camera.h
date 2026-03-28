@@ -29,9 +29,6 @@ bool hw_camera_start(HardwareCamera* cam);
 // Stop the continuous capture cycle
 void hw_camera_stop(HardwareCamera* cam);
 
-// Poll for the next frame (non-blocking)
-bool hw_camera_poll_frame(HardwareCamera* cam);
-
 
 // Fetch latest frame and convert from RGB565 to the given ImageBuffer (RGBA8)
 void hw_camera_get_frame_rgba8(HardwareCamera* cam, ImageBuffer* out_img);
