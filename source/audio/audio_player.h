@@ -50,4 +50,7 @@ float audio_player_duration_sec(const AudioPlayer* player);
 // True if finished playing (reached end)
 bool audio_player_finished(const AudioPlayer* player);
 
+// Restart playback from the beginning
+void audio_player_restart(AudioPlayer* player);
+
 #endif // AUDIO_PLAYER_H

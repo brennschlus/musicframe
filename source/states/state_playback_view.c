@@ -59,8 +59,7 @@ static void playback_view_update(AppState *self, AppContext *ctx) {
   }
 
   if (ctx->audio.loop && audio_player_finished(&ctx->audio)) {
-      float dur = audio_player_duration_sec(&ctx->audio);
-      audio_player_seek(&ctx->audio, -dur);
+      audio_player_restart(&ctx->audio);
   }
 
 }

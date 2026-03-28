@@ -270,3 +270,13 @@ bool audio_player_finished(const AudioPlayer* player)
 void audio_player_set_loop(AudioPlayer* player, bool loop){
     player->loop = loop;
 }
+
+void audio_player_restart(AudioPlayer* player){
+    player->seek_base = 0;
+
+    if (player->playing) {
+        ndspChnWaveBufClear(0);
+        player->playing = false;
+    }
+        audio_player_play(player);
+}
