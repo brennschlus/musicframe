@@ -127,21 +127,13 @@ static void music_select_render_top(AppState* self, AppContext* ctx, C3D_RenderT
         float img_h = ctx->scene.subtex.height;
         float x = (TOP_W - img_w) / 2.0f;
         float y = (TOP_H - img_h) / 2.0f;
-        float inset = 10.0f;
 
         C2D_Image img;
         img.tex    = &ctx->scene.tex;
         img.subtex = &ctx->scene.subtex;
         C2D_DrawImageAt(img, x, y, 0.5f, NULL, 1.0f, 1.0f);
         // Draw frame overlay on top
-        image_frame_draw(
-            ctx->scene.selected_frame,
-            x + inset,
-            y + inset,
-            img_w - inset * 2.0f,
-            img_h - inset * 2.0f,
-            0.6f
-        );
+        image_frame_draw(ctx->scene.selected_frame, 0.0f, 0.0f, TOP_W, TOP_H, 0.6f);
     }
 }
 

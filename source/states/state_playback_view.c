@@ -69,7 +69,6 @@ static void playback_view_render_top(AppState *self, AppContext *ctx,
     float img_h = ctx->scene.subtex.height;
     float x = (TOP_W - img_w) / 2.0f;
     float y = (TOP_H - img_h) / 2.0f;
-    float inset = 10.0f;
 
     // Photo
     C2D_Image img;
@@ -78,14 +77,7 @@ static void playback_view_render_top(AppState *self, AppContext *ctx,
     C2D_DrawImageAt(img, x, y, 0.5f, NULL, 1.0f, 1.0f);
 
     // Selected frame overlay
-    image_frame_draw(
-        ctx->scene.selected_frame,
-        x + inset,
-        y + inset,
-        img_w - inset * 2.0f,
-        img_h - inset * 2.0f,
-        0.6f
-    );
+    image_frame_draw(ctx->scene.selected_frame, 0.0f, 0.0f, TOP_W, TOP_H, 0.6f);
   }
 }
 
