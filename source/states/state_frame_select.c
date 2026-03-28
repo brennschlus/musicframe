@@ -93,21 +93,23 @@ static void frame_select_render_top(AppState* self, AppContext* ctx, C3D_RenderT
         float img_h = ctx->scene.subtex.height;
         float x = (TOP_W - img_w) / 2.0f;
         float y = (TOP_H - img_h) / 2.0f;
+        float inset = 10.0f;
 
         // Draw photo
         C2D_Image img;
         img.tex    = &ctx->scene.tex;
         img.subtex = &ctx->scene.subtex;
         C2D_DrawImageAt(img, x, y, 0.5f, NULL, 1.0f, 1.0f);
-
         // Draw frame overlay on top
-        image_frame_draw(ctx->scene.selected_frame, x, y, img_w, img_h, 0.4f);
+        image_frame_draw(
+            ctx->scene.selected_frame,
+            x + inset,
+            y + inset,
+            img_w - inset * 2.0f,
+            img_h - inset * 2.0f,
+            0.6f
+        );
     }
-
-    // Accent lines
-    u32 clrAccent = C2D_Color32(0xE8, 0x6D, 0x50, 0xFF);
-    C2D_DrawRectSolid(0, 0, 0, TOP_W, 3, clrAccent);
-    C2D_DrawRectSolid(0, TOP_H - 3, 0, TOP_W, 3, clrAccent);
 }
 
 static void frame_select_render_bottom(AppState* self, AppContext* ctx)
