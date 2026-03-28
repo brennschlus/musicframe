@@ -29,6 +29,9 @@ int main(int argc, char *argv[]) {
   // Top screen: citro2d render target
   C3D_RenderTarget *top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 
+  gfxSetDoubleBuffering(GFX_TOP, true);
+  gfxSetDoubleBuffering(GFX_BOTTOM, false);
+
   AppContext ctx = {.running = true,
                     .current_state = STATE_NONE,
                     .next_state = STATE_MAIN_MENU,
