@@ -23,6 +23,7 @@ typedef struct {
     bool playing;
     bool paused;
     u32  seek_base;     // sample offset from seek operations
+    bool loop;
 } AudioPlayer;
 
 void audio_player_init(AudioPlayer* player);
@@ -38,6 +39,9 @@ void audio_player_toggle_pause(AudioPlayer* player);
 
 // Seek by offset_sec (positive = forward, negative = back)
 void audio_player_seek(AudioPlayer* player, int offset_sec);
+
+// Set loop mode (true = loop, false = no loop)
+void audio_player_set_loop(AudioPlayer* player, bool loop);
 
 // Current position and duration in seconds
 float audio_player_position_sec(const AudioPlayer* player);
