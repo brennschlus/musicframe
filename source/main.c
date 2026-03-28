@@ -72,9 +72,17 @@ int main(int argc, char *argv[]) {
     state_manager_update(&ctx);
 
     // --- Render top screen (citro2d) -----------------------------------
-    C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-    state_manager_render_top(&ctx, top);
-    C3D_FrameEnd(0);
+    if (ctx.current_state == STATE_CAMERA_PREVIEW) {
+        state_manager_render_top(&ctx, NULL);
+
+        gfxFlushBuffers();
+        gspWaitForVBlank();
+        gfxSwapBuffers();
+    } else {
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        state_manager_render_top(&ctx, top);
+        C3D_FrameEnd(0);
+    }
 
     // --- Render bottom screen (console) --------------------------------
     state_manager_render_bottom(&ctx);

@@ -32,7 +32,5 @@ ImageBuffer* image_buffer_create(u16 width, u16 height);
 void         image_buffer_destroy(ImageBuffer* buf);
 void         image_buffer_copy(const ImageBuffer* src, ImageBuffer* dst);
 
-// Generate a 240x160 test landscape (sky + ground + sun)
-ImageBuffer* image_buffer_create_test_pattern(void);
 
 #endif // IMAGE_BUFFER_H

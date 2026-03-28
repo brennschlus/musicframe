@@ -7,14 +7,14 @@
 
 typedef struct {
     bool initialized;
-    bool capturing;
-    u8*  receive_buffers[2];
-    u32  buffer_size;
-    u32  frame_size;
-    
+    bool preview_active;
+
+    u16* frame_buffer;
+    u32 frame_size;
+    u32 transfer_bytes;
+
     Handle receive_event;
-    u8 current_receive_idx;
-    u8 latest_frame_idx;
+    bool frame_ready;
 } HardwareCamera;
 
 // Initializes the cam service, outer camera, OUT1 port, RGB565
@@ -29,11 +29,15 @@ bool hw_camera_start(HardwareCamera* cam);
 // Stop the continuous capture cycle
 void hw_camera_stop(HardwareCamera* cam);
 
-// Block until the next frame arrives (or timeout occurs)
-bool hw_camera_wait_next_frame(HardwareCamera* cam, u64 timeout_ns);
+// Poll for the next frame (non-blocking)
+bool hw_camera_poll_frame(HardwareCamera* cam);
+
 
 // Fetch latest frame and convert from RGB565 to the given ImageBuffer (RGBA8)
 void hw_camera_get_frame_rgba8(HardwareCamera* cam, ImageBuffer* out_img);
+
+// Draw the camera preview on the top screen (raw RGB565 data)
+void hw_draw_camera_preview_top(const u16* src);
 
 // Play standard shutter sound
 void hw_camera_play_shutter(HardwareCamera* cam);
