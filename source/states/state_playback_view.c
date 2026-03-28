@@ -48,12 +48,20 @@ static void playback_view_update(AppState *self, AppContext *ctx) {
   if (kDown & KEY_L) {
     audio_player_seek(&ctx->audio, -5);
   }
+  if(kDown & KEY_Y){
+      audio_player_set_loop(&ctx->audio, !ctx->audio.loop);
+  }
 
   if (kDown & KEY_B) {
     audio_player_stop(&ctx->audio);
     scene_model_cleanup(&ctx->scene);
     state_manager_transition(ctx, STATE_MAIN_MENU);
   }
+
+  if (ctx->audio.loop && audio_player_finished(&ctx->audio)) {
+      audio_player_restart(&ctx->audio);
+  }
+
 }
 
 static void playback_view_render_top(AppState *self, AppContext *ctx,
@@ -91,6 +99,8 @@ static void playback_view_render_bottom(AppState *self, AppContext *ctx) {
   printf("\n");
   printf("  Filter: %s\n", image_filter_name(ctx->scene.selected_filter));
   printf("  Frame:  %s\n", image_frame_name(ctx->scene.selected_frame));
+  printf("  Loop:   %s\n", ctx->audio.loop ? "Yes" : "No ");
+
 
   if (ctx->scene.music_selected) {
     if (!ctx->audio.ndsp_ok) {
@@ -121,6 +131,7 @@ static void playback_view_render_bottom(AppState *self, AppContext *ctx) {
   printf("  [A]     Play / Pause\n");
   printf("  [L/R]   Seek -/+ 5s\n");
   printf("  [B]     Back to menu\n");
+  printf("  [Y]     Toggle loop\n");
   printf("\n");
   printf("---------------------------\n");
 }

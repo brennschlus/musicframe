@@ -1,4 +1,5 @@
 #include "audio_player.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -87,6 +88,7 @@ static void setup_channel(AudioPlayer* player)
 void audio_player_init(AudioPlayer* player)
 {
     memset(player, 0, sizeof(AudioPlayer));
+    player->loop = true;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,7 +177,7 @@ void audio_player_play(AudioPlayer* player)
     player->wav_buf.status     = NDSP_WBUF_FREE;
 
     ndspChnWaveBufAdd(0, &player->wav_buf);
-    
+
     // Explicitly unpause, just in case
     ndspChnSetPaused(0, false);
 
@@ -263,4 +265,18 @@ bool audio_player_finished(const AudioPlayer* player)
 {
     if (!player->loaded || !player->playing) return false;
     return player->wav_buf.status == NDSP_WBUF_DONE;
+}
+
+void audio_player_set_loop(AudioPlayer* player, bool loop){
+    player->loop = loop;
+}
+
+void audio_player_restart(AudioPlayer* player){
+    player->seek_base = 0;
+
+    if (player->playing) {
+        ndspChnWaveBufClear(0);
+        player->playing = false;
+    }
+        audio_player_play(player);
 }
