@@ -67,25 +67,18 @@ static void playback_view_render_top(AppState *self, AppContext *ctx,
   if (ctx->scene.photo_loaded && ctx->scene.tex_initialized) {
     float img_w = ctx->scene.subtex.width;
     float img_h = ctx->scene.subtex.height;
-    float cx = TOP_W / 2.0f;
-    float cy = TOP_H / 2.0f;
-    float px = cx - img_w / 2;
-    float py = cy - img_h / 2;
+    float x = (TOP_W - img_w) / 2.0f;
+    float y = (TOP_H - img_h) / 2.0f;
 
     // Photo
     C2D_Image img;
     img.tex = &ctx->scene.tex;
     img.subtex = &ctx->scene.subtex;
-    C2D_DrawImageAt(img, px, py, 0.5f, NULL, 1.0f, 1.0f);
+    C2D_DrawImageAt(img, x, y, 0.5f, NULL, 1.0f, 1.0f);
 
     // Selected frame overlay
-    image_frame_draw(ctx->scene.selected_frame, px, py, img_w, img_h, 0.4f);
+    image_frame_draw(ctx->scene.selected_frame, 0.0f, 0.0f, TOP_W, TOP_H, 0.6f);
   }
-
-  // Accent lines
-  u32 clrAccent = C2D_Color32(0xE8, 0x6D, 0x50, 0xFF);
-  C2D_DrawRectSolid(0, 0, 0, TOP_W, 2, clrAccent);
-  C2D_DrawRectSolid(0, TOP_H - 2, 0, TOP_W, 2, clrAccent);
 }
 
 static void playback_view_render_bottom(AppState *self, AppContext *ctx) {

@@ -13,7 +13,7 @@
 // Get human-readable frame name
 const char* image_frame_name(int frame_id);
 
-// Draw frame overlay around a photo at (x, y) with size (w, h).
+// Frame is drawn as an overlay inside the given rect.
 // Call AFTER drawing the photo, so frame elements render on top.
 // depth should be higher than the photo's depth (e.g. 0.6).
 void image_frame_draw(int frame_id, float x, float y, float w, float h, float depth);

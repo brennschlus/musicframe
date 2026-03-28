@@ -132,12 +132,9 @@ static void music_select_render_top(AppState* self, AppContext* ctx, C3D_RenderT
         img.tex    = &ctx->scene.tex;
         img.subtex = &ctx->scene.subtex;
         C2D_DrawImageAt(img, x, y, 0.5f, NULL, 1.0f, 1.0f);
-        image_frame_draw(ctx->scene.selected_frame, x, y, img_w, img_h, 0.4f);
+        // Draw frame overlay on top
+        image_frame_draw(ctx->scene.selected_frame, 0.0f, 0.0f, TOP_W, TOP_H, 0.6f);
     }
-
-    u32 clrAccent = C2D_Color32(0xE8, 0x6D, 0x50, 0xFF);
-    C2D_DrawRectSolid(0, 0, 0, TOP_W, 3, clrAccent);
-    C2D_DrawRectSolid(0, TOP_H - 3, 0, TOP_W, 3, clrAccent);
 }
 
 static void music_select_render_bottom(AppState* self, AppContext* ctx)
