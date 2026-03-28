@@ -8,10 +8,13 @@
 typedef struct {
     bool initialized;
     bool capturing;
-    u8*  receive_buffer;
+    u8*  receive_buffers[2];
     u32  buffer_size;
+    u32  frame_size;
     
     Handle receive_event;
+    u8 current_receive_idx;
+    u8 latest_frame_idx;
 } HardwareCamera;
 
 // Initializes the cam service, outer camera, OUT1 port, RGB565
