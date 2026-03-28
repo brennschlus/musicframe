@@ -25,6 +25,8 @@ static void playback_view_enter(AppState *self, AppContext *ctx) {
     audio_player_load(&ctx->audio, ctx->scene.music_path);
     audio_player_play(&ctx->audio);
   }
+  // TODO: do not fortget to delete this code, after moving away from text rendering.
+  consoleClear();
 }
 
 static void playback_view_exit(AppState *self, AppContext *ctx) {
@@ -88,11 +90,7 @@ static void playback_view_render_top(AppState *self, AppContext *ctx,
 
 static void playback_view_render_bottom(AppState *self, AppContext *ctx) {
   (void)self;
-  static int once = 0;
-  if (!once) {
-    consoleClear();
-    once = 1;
-  }
+
   printf("\x1b[1;1H");
   printf("===========================\n");
   printf("   Playback View\n");
