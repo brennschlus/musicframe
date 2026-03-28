@@ -9,7 +9,6 @@
 #include <citro2d.h>
 
 #include "app_context.h"
-#include "c3d/framebuffer.h"
 #include "camera/hardware_camera.h"
 #include "state/state_manager.h"
 
@@ -73,6 +72,7 @@ int main(int argc, char *argv[]) {
     state_manager_update(&ctx);
 
     // --- Render top screen (citro2d) -----------------------------------
+    // with one exeption (camera preview reneders diectly from iamge buffer)
     if (ctx.current_state == STATE_CAMERA_PREVIEW) {
         state_manager_render_top(&ctx, NULL);
 
