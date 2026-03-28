@@ -5,6 +5,11 @@ bool hw_camera_init(HardwareCamera *cam) {
   cam->initialized = false;
   cam->capturing = false;
   cam->receive_event = 0;
+  cam->receive_buffers[0] = NULL;
+  cam->receive_buffers[1] = NULL;
+  cam->current_receive_idx = 0;
+  cam->latest_frame_idx = 0;
+  cam->frame_size = 400 * 240 * 2;
 
   Result res = camInit();
   if (R_FAILED(res))
@@ -29,14 +34,22 @@ bool hw_camera_init(HardwareCamera *cam) {
   if (R_FAILED(res))
     goto fail;
 
-  u32 frame_size = 400 * 240 * 2; // 192000 bytes
-  cam->receive_buffer = (u8 *)linearAlloc(frame_size); // Must allocate full frame
-  if (!cam->receive_buffer)
+  // Two full-frame buffers to avoid CPU/GPU reading while DMA is writing.
+  cam->receive_buffers[0] = (u8 *)linearAlloc(cam->frame_size);
+  cam->receive_buffers[1] = (u8 *)linearAlloc(cam->frame_size);
+  if (!cam->receive_buffers[0] || !cam->receive_buffers[1])
     goto fail;
 
   res = CAMU_SetTransferBytes(PORT_BOTH, cam->buffer_size, 400, 240); // Uses chunk size!
   if (R_FAILED(res)) {
-    linearFree(cam->receive_buffer);
+    if (cam->receive_buffers[0]) {
+      linearFree(cam->receive_buffers[0]);
+      cam->receive_buffers[0] = NULL;
+    }
+    if (cam->receive_buffers[1]) {
+      linearFree(cam->receive_buffers[1]);
+      cam->receive_buffers[1] = NULL;
+    }
     goto fail;
   }
 
@@ -44,6 +57,14 @@ bool hw_camera_init(HardwareCamera *cam) {
   return true;
 
 fail:
+  if (cam->receive_buffers[0]) {
+    linearFree(cam->receive_buffers[0]);
+    cam->receive_buffers[0] = NULL;
+  }
+  if (cam->receive_buffers[1]) {
+    linearFree(cam->receive_buffers[1]);
+    cam->receive_buffers[1] = NULL;
+  }
   camExit();
   return false;
 }
@@ -56,9 +77,13 @@ void hw_camera_shutdown(HardwareCamera *cam) {
     hw_camera_stop(cam);
   }
 
-  if (cam->receive_buffer) {
-    linearFree(cam->receive_buffer);
-    cam->receive_buffer = NULL;
+  if (cam->receive_buffers[0]) {
+    linearFree(cam->receive_buffers[0]);
+    cam->receive_buffers[0] = NULL;
+  }
+  if (cam->receive_buffers[1]) {
+    linearFree(cam->receive_buffers[1]);
+    cam->receive_buffers[1] = NULL;
   }
 
   camExit();
@@ -81,10 +106,12 @@ bool hw_camera_start(HardwareCamera *cam) {
   if (R_FAILED(res))
     return false;
 
-  // Set up continuous receiving ONCE
-  u32 frame_size = 400 * 240 * 2;
-  res = CAMU_SetReceiving(&cam->receive_event, cam->receive_buffer, PORT_CAM1,
-                          frame_size, (s16)cam->buffer_size);
+  cam->current_receive_idx = 0;
+  cam->latest_frame_idx = 0;
+
+  // Queue first receive request. Each completed frame is re-queued in wait_next_frame.
+  res = CAMU_SetReceiving(&cam->receive_event, cam->receive_buffers[cam->current_receive_idx],
+                          PORT_CAM1, cam->frame_size, (s16)cam->buffer_size);
   if (R_FAILED(res)) {
     CAMU_StopCapture(PORT_BOTH);
     return false;
@@ -115,11 +142,26 @@ bool hw_camera_wait_next_frame(HardwareCamera *cam, u64 timeout_ns) {
 
   Result res = svcWaitSynchronization(cam->receive_event, timeout_ns);
   if (R_SUCCEEDED(res)) {
-    // Frame arrived! Clear the event so it can be signaled by the next frame.
+    // Frame arrived.
     svcClearEvent(cam->receive_event);
+    svcCloseHandle(cam->receive_event);
+    cam->receive_event = 0;
 
-    // Invalidate CPU cache so we see the DMA update
-    GSPGPU_InvalidateDataCache(cam->receive_buffer, 400 * 240 * 2);
+    // Read from the completed buffer, then immediately queue the alternate buffer.
+    cam->latest_frame_idx = cam->current_receive_idx;
+    cam->current_receive_idx ^= 1;
+
+    res = CAMU_SetReceiving(&cam->receive_event, cam->receive_buffers[cam->current_receive_idx],
+                            PORT_CAM1, cam->frame_size, (s16)cam->buffer_size);
+    if (R_FAILED(res)) {
+      cam->capturing = false;
+      CAMU_StopCapture(PORT_BOTH);
+      CAMU_Activate(SELECT_NONE);
+      return false;
+    }
+
+    // Invalidate CPU cache so we see the completed DMA update.
+    GSPGPU_InvalidateDataCache(cam->receive_buffers[cam->latest_frame_idx], cam->frame_size);
 
     return true;
   }
@@ -128,10 +170,10 @@ bool hw_camera_wait_next_frame(HardwareCamera *cam, u64 timeout_ns) {
 }
 
 void hw_camera_get_frame_rgba8(HardwareCamera *cam, ImageBuffer *out_img) {
-  if (!cam->initialized || !cam->receive_buffer || !out_img->pixels)
+  if (!cam->initialized || !cam->receive_buffers[cam->latest_frame_idx] || !out_img->pixels)
     return;
 
-  u16 *src = (u16 *)cam->receive_buffer;
+  u16 *src = (u16 *)cam->receive_buffers[cam->latest_frame_idx];
   u32 *dst = (u32 *)out_img->pixels;
   int w = out_img->width;
   int h = out_img->height;
