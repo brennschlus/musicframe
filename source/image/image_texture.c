@@ -66,7 +66,7 @@ bool image_texture_upload(const ImageBuffer* buf, C3D_Tex* tex,
     u32*       dst = (u32*)tex->data;
 
     for (u32 y = 0; y < buf->height; y++) {
-        u32 flipped_y = tex_h - 1 - y;
+        u32 flipped_y = buf->height - 1 - y;
         for (u32 x = 0; x < buf->width; x++) {
             u32 si = y * buf->width + x;
             u32 di = get_tiled_offset(x, flipped_y, tex_w);
