@@ -11,18 +11,13 @@
 // Input:         A = start new scene, START = exit app
 // ---------------------------------------------------------------------------
 
-#define TOP_SCREEN_WIDTH  400
-#define TOP_SCREEN_HEIGHT 240
-
-// -- State callbacks --------------------------------------------------------
-
 static void main_menu_enter(AppState* self, AppContext* ctx)
 {
     (void)self;
     (void)ctx;
 
     consoleClear();
-    printf("\x1b[1;1H");  // Move cursor to top-left
+    printf("\x1b[1;1H");
     printf("===========================\n");
     printf("   Music Photo Frame\n");
     printf("===========================\n");
@@ -54,10 +49,11 @@ static void main_menu_update(AppState* self, AppContext* ctx)
     }
 }
 
-static void main_menu_render_top(AppState* self, AppContext* ctx, C3D_RenderTarget* target)
+static void main_menu_render_top(AppState* self, AppContext* ctx)
 {
     (void)self;
-    (void)ctx;
+
+    C3D_RenderTarget* target = ctx->top_target;
 
     // Background — warm gradient-like feel using overlapping rectangles
     u32 clrBg     = C2D_Color32(0x2D, 0x1B, 0x3D, 0xFF);  // Deep purple
@@ -68,11 +64,11 @@ static void main_menu_render_top(AppState* self, AppContext* ctx, C3D_RenderTarg
     C2D_SceneBegin(target);
 
     // Decorative stripe at top
-    C2D_DrawRectSolid(0, 0, 0, TOP_SCREEN_WIDTH, 4, clrAccent);
+    C2D_DrawRectSolid(0, 0, 0, TOP_SCREEN_W, 4, clrAccent);
 
     // Central decorative block — represents the "frame" concept
-    float cx = TOP_SCREEN_WIDTH / 2.0f;
-    float cy = TOP_SCREEN_HEIGHT / 2.0f;
+    float cx = TOP_SCREEN_W / 2.0f;
+    float cy = TOP_SCREEN_H / 2.0f;
     float frame_w = 160;
     float frame_h = 120;
 
@@ -90,7 +86,7 @@ static void main_menu_render_top(AppState* self, AppContext* ctx, C3D_RenderTarg
     C2D_DrawRectSolid(cx - 40, cy - 30, 0, 80, 60, clrSoft);
 
     // Bottom stripe
-    C2D_DrawRectSolid(0, TOP_SCREEN_HEIGHT - 4, 0, TOP_SCREEN_WIDTH, 4, clrAccent);
+    C2D_DrawRectSolid(0, TOP_SCREEN_H - 4, 0, TOP_SCREEN_W, 4, clrAccent);
 }
 
 static void main_menu_render_bottom(AppState* self, AppContext* ctx)
@@ -103,6 +99,7 @@ static void main_menu_render_bottom(AppState* self, AppContext* ctx)
 // -- Factory ----------------------------------------------------------------
 
 static AppState s_main_menu = {
+    .uses_direct_framebuffer = false,
     .enter         = main_menu_enter,
     .exit          = main_menu_exit,
     .update        = main_menu_update,

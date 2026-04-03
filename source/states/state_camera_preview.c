@@ -3,9 +3,6 @@
 #include "../state/state_manager.h"
 #include <stdio.h>
 
-#define TOP_W 400
-#define TOP_H 240
-
 static void camera_preview_enter(AppState* self, AppContext* ctx)
 {
     (void)self;
@@ -56,7 +53,7 @@ static void camera_preview_update(AppState* self, AppContext* ctx)
             return;
         }
 
-        ImageBuffer* captured = image_buffer_create(TOP_W, TOP_H);
+        ImageBuffer* captured = image_buffer_create(TOP_SCREEN_W, TOP_SCREEN_H);
         if (!captured) {
             return;
         }
@@ -81,10 +78,9 @@ static void clear_top_fb(void)
     memset(fb, 0, fbWidth * fbHeight * 3);
 }
 
-static void camera_preview_render_top(AppState* self, AppContext* ctx, C3D_RenderTarget* target)
+static void camera_preview_render_top(AppState* self, AppContext* ctx)
 {
     (void)self;
-    (void)target;
 
     clear_top_fb();
 
@@ -101,9 +97,8 @@ static void camera_preview_render_bottom(AppState* self, AppContext* ctx)
     (void)ctx;
 }
 
-
-
 static AppState s_camera_preview = {
+    .uses_direct_framebuffer = true,
     .enter         = camera_preview_enter,
     .exit          = camera_preview_exit,
     .update        = camera_preview_update,

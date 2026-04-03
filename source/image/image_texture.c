@@ -27,10 +27,9 @@ static u32 next_pow2(u32 v)
 }
 
 // ---------------------------------------------------------------------------
-bool image_texture_upload(const ImageBuffer* buf, C3D_Tex* tex,
-                          Tex3DS_SubTexture* subtex, bool* initialized)
+bool image_texture_upload(const ImageBuffer* buf, ImageTexture* itex)
 {
-    if (!buf || !buf->pixels || !tex || !subtex || !initialized)
+    if (!buf || !buf->pixels || !itex)
         return false;
 
     u32 tex_w = next_pow2(buf->width);
@@ -41,29 +40,29 @@ bool image_texture_upload(const ImageBuffer* buf, C3D_Tex* tex,
     if (tex_h < 8) tex_h = 8;
 
     // Allocate texture on first call
-    if (!*initialized) {
-        if (!C3D_TexInit(tex, (u16)tex_w, (u16)tex_h, GPU_RGBA8)) {
+    if (!itex->initialized) {
+        if (!C3D_TexInit(&itex->tex, (u16)tex_w, (u16)tex_h, GPU_RGBA8)) {
             return false;
         }
-        C3D_TexSetFilter(tex, GPU_LINEAR, GPU_LINEAR);
-        C3D_TexSetWrap(tex, GPU_CLAMP_TO_BORDER, GPU_CLAMP_TO_BORDER);
-        *initialized = true;
+        C3D_TexSetFilter(&itex->tex, GPU_LINEAR, GPU_LINEAR);
+        C3D_TexSetWrap(&itex->tex, GPU_CLAMP_TO_BORDER, GPU_CLAMP_TO_BORDER);
+        itex->initialized = true;
     }
 
     // Fill subtexture UV region
-    subtex->width  = buf->width;
-    subtex->height = buf->height;
-    subtex->left   = 0.0f;
-    subtex->top    = 1.0f;
-    subtex->right  = (float)buf->width  / tex_w;
-    subtex->bottom = 1.0f - (float)buf->height / tex_h;
+    itex->subtex.width  = buf->width;
+    itex->subtex.height = buf->height;
+    itex->subtex.left   = 0.0f;
+    itex->subtex.top    = 1.0f;
+    itex->subtex.right  = (float)buf->width  / tex_w;
+    itex->subtex.bottom = 1.0f - (float)buf->height / tex_h;
 
     // Clear texture data (padding area)
-    memset(tex->data, 0, tex->size);
+    memset(itex->tex.data, 0, itex->tex.size);
 
     // Upload: linear RGBA → tiled ABGR with Y-flip
     const u32* src = buf->pixels;
-    u32*       dst = (u32*)tex->data;
+    u32*       dst = (u32*)itex->tex.data;
 
     for (u32 y = 0; y < buf->height; y++) {
         u32 flipped_y = buf->height - 1 - y;
@@ -75,15 +74,15 @@ bool image_texture_upload(const ImageBuffer* buf, C3D_Tex* tex,
         }
     }
 
-    C3D_TexFlush(tex);
+    C3D_TexFlush(&itex->tex);
     return true;
 }
 
 // ---------------------------------------------------------------------------
-void image_texture_cleanup(C3D_Tex* tex, bool* initialized)
+void image_texture_cleanup(ImageTexture* itex)
 {
-    if (initialized && *initialized) {
-        C3D_TexDelete(tex);
-        *initialized = false;
+    if (itex && itex->initialized) {
+        C3D_TexDelete(&itex->tex);
+        itex->initialized = false;
     }
 }

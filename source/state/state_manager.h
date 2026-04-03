@@ -27,8 +27,9 @@ void state_manager_apply_transition(AppContext* ctx);
 // Delegate update to the current active state
 void state_manager_update(AppContext* ctx);
 
-// Delegate render_top to the current active state
-void state_manager_render_top(AppContext* ctx, C3D_RenderTarget* target);
+// Render the top screen. Handles C3D_FrameBegin/End internally for normal
+// states, or gfxFlush/Swap for states with uses_direct_framebuffer == true.
+void state_manager_render_top(AppContext* ctx);
 
 // Delegate render_bottom to the current active state
 void state_manager_render_bottom(AppContext* ctx);

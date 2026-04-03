@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
   C2D_Prepare();
 
-  // Bottom screen: text console (for debug and simple UI in early phases)
+  // Bottom screen: text console (for debug and simple UI)
   consoleInit(GFX_BOTTOM, NULL);
 
   // Top screen: citro2d render target
@@ -47,7 +47,6 @@ int main(int argc, char *argv[]) {
   audio_player_init(&ctx.audio);
 
   if (R_FAILED(ndsp_res)) {
-    // We'll write this error state to the struct so UI can show it
     ctx.audio.ndsp_ok = false;
   } else {
     ctx.audio.ndsp_ok = true;
@@ -65,30 +64,12 @@ int main(int argc, char *argv[]) {
 
   // --- Main loop ---------------------------------------------------------
   while (aptMainLoop() && ctx.running) {
-    // --- Input ---------------------------------------------------------
     hidScanInput();
 
-    // --- Update --------------------------------------------------------
     state_manager_update(&ctx);
-
-    // --- Render top screen (citro2d) -----------------------------------
-    // with one exeption (camera preview reneders diectly from iamge buffer)
-    if (ctx.current_state == STATE_CAMERA_PREVIEW) {
-        state_manager_render_top(&ctx, NULL);
-
-        gfxFlushBuffers();
-        gspWaitForVBlank();
-        gfxSwapBuffers();
-    } else {
-        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        state_manager_render_top(&ctx, top);
-        C3D_FrameEnd(0);
-    }
-
-    // --- Render bottom screen (console) --------------------------------
+    state_manager_render_top(&ctx);
     state_manager_render_bottom(&ctx);
 
-    // --- Apply pending state transition (between frames) ---------------
     state_manager_apply_transition(&ctx);
   }
 

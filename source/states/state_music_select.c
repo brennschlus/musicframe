@@ -13,8 +13,6 @@
 // Input:         UP/DOWN = navigate, A = select, B = back
 // ---------------------------------------------------------------------------
 
-#define TOP_W 400
-#define TOP_H 240
 #define VISIBLE_ROWS 10
 
 static MusicLibrary s_library;
@@ -53,8 +51,6 @@ static void redraw_list(AppContext* ctx)
     printf("\n  [A] Select  [B] Back\n");
     printf("  %d/%d\n", s_cursor + 1, s_library.count);
 }
-
-// -- State callbacks --------------------------------------------------------
 
 static void music_select_enter(AppState* self, AppContext* ctx)
 {
@@ -100,7 +96,6 @@ static void music_select_update(AppState* self, AppContext* ctx)
         }
 
         if (kDown & KEY_A) {
-            // Store selected music path in scene
             music_library_get_path(&s_library, s_cursor,
                                    ctx->scene.music_path,
                                    sizeof(ctx->scene.music_path));
@@ -114,26 +109,19 @@ static void music_select_update(AppState* self, AppContext* ctx)
     }
 }
 
-static void music_select_render_top(AppState* self, AppContext* ctx, C3D_RenderTarget* target)
+static void music_select_render_top(AppState* self, AppContext* ctx)
 {
     (void)self;
+
+    C3D_RenderTarget* target = ctx->top_target;
 
     u32 clrBg = C2D_Color32(0x1A, 0x1A, 0x2E, 0xFF);
     C2D_TargetClear(target, clrBg);
     C2D_SceneBegin(target);
 
-    if (ctx->scene.photo_loaded && ctx->scene.tex_initialized) {
-        float img_w = ctx->scene.subtex.width;
-        float img_h = ctx->scene.subtex.height;
-        float x = (TOP_W - img_w) / 2.0f;
-        float y = (TOP_H - img_h) / 2.0f;
-
-        C2D_Image img;
-        img.tex    = &ctx->scene.tex;
-        img.subtex = &ctx->scene.subtex;
-        C2D_DrawImageAt(img, x, y, 0.5f, NULL, 1.0f, 1.0f);
-        // Draw frame overlay on top
-        image_frame_draw(ctx->scene.selected_frame, 0.0f, 0.0f, TOP_W, TOP_H, 0.6f);
+    if (ctx->scene.photo_loaded && ctx->scene.texture.initialized) {
+        scene_model_draw_photo_centered(&ctx->scene, 0.5f);
+        image_frame_draw(ctx->scene.selected_frame, 0.0f, 0.0f, TOP_SCREEN_W, TOP_SCREEN_H, 0.6f);
     }
 }
 
@@ -146,6 +134,7 @@ static void music_select_render_bottom(AppState* self, AppContext* ctx)
 // -- Factory ----------------------------------------------------------------
 
 static AppState s_music_select = {
+    .uses_direct_framebuffer = false,
     .enter         = music_select_enter,
     .exit          = music_select_exit,
     .update        = music_select_update,

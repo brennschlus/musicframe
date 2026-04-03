@@ -1,4 +1,5 @@
 #include "state_manager.h"
+#include <3ds.h>
 
 // Include all concrete state headers
 #include "../states/state_main_menu.h"
@@ -92,10 +93,22 @@ void state_manager_update(AppContext* ctx)
 }
 
 // ---------------------------------------------------------------------------
-void state_manager_render_top(AppContext* ctx, C3D_RenderTarget* target)
+void state_manager_render_top(AppContext* ctx)
 {
-    if (s_current && s_current->render_top) {
-        s_current->render_top(s_current, ctx, target);
+    if (!s_current || !s_current->render_top)
+        return;
+
+    if (s_current->uses_direct_framebuffer) {
+        // Camera preview: writes directly to the raw framebuffer.
+        // Skip C3D entirely and sync with gfx* calls instead.
+        s_current->render_top(s_current, ctx);
+        gfxFlushBuffers();
+        gspWaitForVBlank();
+        gfxSwapBuffers();
+    } else {
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        s_current->render_top(s_current, ctx);
+        C3D_FrameEnd(0);
     }
 }
 

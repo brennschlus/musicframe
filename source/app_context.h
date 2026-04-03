@@ -8,6 +8,12 @@
 #include "camera/hardware_camera.h"
 
 // ---------------------------------------------------------------------------
+// Top screen dimensions (constant for all 3DS models)
+// ---------------------------------------------------------------------------
+#define TOP_SCREEN_W 400
+#define TOP_SCREEN_H 240
+
+// ---------------------------------------------------------------------------
 // Application state identifiers
 // ---------------------------------------------------------------------------
 typedef enum {
@@ -19,8 +25,6 @@ typedef enum {
     STATE_FRAME_SELECT,
     STATE_MUSIC_SELECT,
     STATE_PLAYBACK_VIEW,
-    // Future states:
-    // STATE_CAMERA_PREVIEW,
     STATE_COUNT
 } AppStateId;
 
