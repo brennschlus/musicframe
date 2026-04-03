@@ -14,6 +14,11 @@
 // this interface. The state manager calls these in the correct order.
 // ---------------------------------------------------------------------------
 typedef struct AppState {
+    // If true, render_top writes directly to the raw framebuffer (no C3D).
+    // The state manager will call gfxFlushBuffers / gspWaitForVBlank /
+    // gfxSwapBuffers instead of C3D_FrameBegin / C3D_FrameEnd.
+    bool uses_direct_framebuffer;
+
     // Called once when entering this state
     void (*enter)(struct AppState* self, AppContext* ctx);
 
@@ -23,8 +28,9 @@ typedef struct AppState {
     // Called every frame — handle input, update logic, request transitions
     void (*update)(struct AppState* self, AppContext* ctx);
 
-    // Called every frame inside C3D_FrameBegin/End — draw on top screen
-    void (*render_top)(struct AppState* self, AppContext* ctx, C3D_RenderTarget* target);
+    // Called every frame — draw on top screen.
+    // Access ctx->top_target for the citro2d render target.
+    void (*render_top)(struct AppState* self, AppContext* ctx);
 
     // Called every frame — output to bottom screen (console printf for now)
     void (*render_bottom)(struct AppState* self, AppContext* ctx);

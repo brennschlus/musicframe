@@ -2,6 +2,29 @@
 #include <string.h>
 
 // ---------------------------------------------------------------------------
+// Pixel helpers
+// ---------------------------------------------------------------------------
+
+// Pixel format in ImageBuffer: u32 = R | (G<<8) | (B<<16) | (A<<24)
+static inline void rgba8_unpack(u32 px, u8* r, u8* g, u8* b, u8* a)
+{
+    *r = (u8)(px);
+    *g = (u8)(px >> 8);
+    *b = (u8)(px >> 16);
+    *a = (u8)(px >> 24);
+}
+
+static inline u32 RGBA8(u8 r, u8 g, u8 b, u8 a)
+{
+    return (u32)r | ((u32)g << 8) | ((u32)b << 16) | ((u32)a << 24);
+}
+
+static inline u8 clamp_u8(int v)
+{
+    return (v < 0) ? 0 : (v > 255) ? 255 : (u8)v;
+}
+
+// ---------------------------------------------------------------------------
 static const char* s_filter_names[FILTER_COUNT] = {
     "None",
     "Grayscale",
