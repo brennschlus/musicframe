@@ -1,5 +1,9 @@
 #include "state_manager.h"
 #include <3ds.h>
+#include <citro2d.h>
+
+#include "../ui/ui_text.h"
+#include "../ui/ui_panel.h"
 
 // Include all concrete state headers
 #include "../states/state_main_menu.h"
@@ -9,6 +13,7 @@
 #include "../states/state_frame_select.h"
 #include "../states/state_music_select.h"
 #include "../states/state_playback_view.h"
+#include "3ds/gfx.h"
 
 // ---------------------------------------------------------------------------
 // State registry — one AppState* per AppStateId
@@ -93,29 +98,44 @@ void state_manager_update(AppContext* ctx)
 }
 
 // ---------------------------------------------------------------------------
-void state_manager_render_top(AppContext* ctx)
+static void clear_and_draw_bottom(AppContext* ctx)
 {
-    if (!s_current || !s_current->render_top)
-        return;
-
-    if (s_current->uses_direct_framebuffer) {
-        // Camera preview: writes directly to the raw framebuffer.
-        // Skip C3D entirely and sync with gfx* calls instead.
-        s_current->render_top(s_current, ctx);
-        gfxFlushBuffers();
-        gspWaitForVBlank();
-        gfxSwapBuffers();
-    } else {
-        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        s_current->render_top(s_current, ctx);
-        C3D_FrameEnd(0);
+    C2D_TargetClear(ctx->bottom_target, ui_color_bg());
+    C2D_SceneBegin(ctx->bottom_target);
+    if (s_current->render_bottom) {
+        s_current->render_bottom(s_current, ctx);
     }
 }
 
 // ---------------------------------------------------------------------------
-void state_manager_render_bottom(AppContext* ctx)
+void state_manager_render_frame(AppContext* ctx)
 {
-    if (s_current && s_current->render_bottom) {
-        s_current->render_bottom(s_current, ctx);
+    if (!s_current) return;
+
+    // Reset the shared text buffer once per frame so every render_bottom
+    // can parse its strings into it without leaking glyphs across frames.
+    ui_text_frame_begin();
+
+    if (s_current->uses_direct_framebuffer) {
+        // Top screen: raw framebuffer path (e.g. camera preview).
+        if (s_current->render_top) {
+            s_current->render_top(s_current, ctx);
+        }
+        gfxFlushBuffers();
+        gspWaitForVBlank();
+        gfxScreenSwapBuffers(GFX_TOP, false);
+
+        // Bottom screen still goes through citro2d in its own frame block.
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        clear_and_draw_bottom(ctx);
+        C3D_FrameEnd(0);
+    } else {
+        // Both screens rendered in a single C3D frame.
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        if (s_current->render_top) {
+            s_current->render_top(s_current, ctx);
+        }
+        clear_and_draw_bottom(ctx);
+        C3D_FrameEnd(0);
     }
 }

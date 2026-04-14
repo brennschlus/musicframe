@@ -1,38 +1,21 @@
 #include "state_photo_review.h"
 #include "../state/state_manager.h"
-#include <stdio.h>
+#include "../ui/ui_panel.h"
+#include "../ui/ui_text.h"
 #include <3ds.h>
 
 // ---------------------------------------------------------------------------
 // Photo Review screen
 //
 // Top screen:    Display the loaded photo (camera capture)
-// Bottom screen: Navigation hints
+// Bottom screen: Navigation hints rendered with citro2d
 // Input:         A = go to filter select, B = back to menu
 // ---------------------------------------------------------------------------
 
 static void photo_review_enter(AppState* self, AppContext* ctx)
 {
     (void)self;
-
-    consoleClear();
-    printf("\x1b[1;1H");
-    printf("===========================\n");
-    printf("   Photo Review\n");
-    printf("===========================\n");
-    printf("\n");
-    if (ctx->scene.photo_loaded) {
-        printf("  Image: %dx%d\n",
-               ctx->scene.original->width,
-               ctx->scene.original->height);
-    } else {
-        printf("  (failed to load image)\n");
-    }
-    printf("\n");
-    printf("  [A] Choose filter >>\n");
-    printf("  [B] << Back to menu\n");
-    printf("\n");
-    printf("---------------------------\n");
+    (void)ctx;
 }
 
 static void photo_review_exit(AppState* self, AppContext* ctx)
@@ -78,7 +61,33 @@ static void photo_review_render_top(AppState* self, AppContext* ctx)
 static void photo_review_render_bottom(AppState* self, AppContext* ctx)
 {
     (void)self;
-    (void)ctx;
+
+    ui_panel_bg_dark();
+    ui_panel_title("Photo Review");
+
+    // Info panel
+    C2D_DrawRectSolid(20.0f, 50.0f, 0, BOTTOM_W - 40.0f, 50.0f, ui_color_panel());
+
+    if (ctx->scene.photo_loaded && ctx->scene.original) {
+        ui_draw(32.0f, 58.0f, 0.0f, 0.45f, ui_color_dim(),
+                "Image loaded:");
+        ui_draw(32.0f, 76.0f, 0.0f, 0.55f, ui_color_gold(),
+                "%d x %d",
+                ctx->scene.original->width,
+                ctx->scene.original->height);
+    } else {
+        ui_draw(32.0f, 66.0f, 0.0f, 0.50f, ui_color_accent(),
+                "Failed to load image");
+    }
+
+    // Controls
+    ui_draw(28.0f, 128.0f, 0.0f, 0.50f, ui_color_gold(), "[A]");
+    ui_draw(70.0f, 128.0f, 0.0f, 0.50f, ui_color_text(), "Choose a filter");
+
+    ui_draw(28.0f, 152.0f, 0.0f, 0.50f, ui_color_gold(), "[B]");
+    ui_draw(70.0f, 152.0f, 0.0f, 0.50f, ui_color_text(), "Back to main menu");
+
+    ui_panel_footer_hint("Review your photo");
 }
 
 // -- Factory ----------------------------------------------------------------

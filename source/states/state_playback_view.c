@@ -2,15 +2,16 @@
 #include "../image/image_filters.h"
 #include "../image/image_frames.h"
 #include "../state/state_manager.h"
+#include "../ui/ui_panel.h"
+#include "../ui/ui_text.h"
 #include <3ds.h>
-#include <stdio.h>
 #include <string.h>
 
 // ---------------------------------------------------------------------------
 // Playback View screen
 //
 // Top screen:    Final framed photo (filtered image + frame overlay)
-// Bottom screen: Music playback controls
+// Bottom screen: Music playback controls rendered with citro2d
 // Input:         A = play/pause, L/R = seek, Y = toggle loop, B = back
 // ---------------------------------------------------------------------------
 
@@ -21,7 +22,6 @@ static void playback_view_enter(AppState* self, AppContext* ctx)
         audio_player_load(&ctx->audio, ctx->scene.music_path);
         audio_player_play(&ctx->audio);
     }
-    consoleClear();
 }
 
 static void playback_view_exit(AppState* self, AppContext* ctx)
@@ -76,50 +76,101 @@ static void playback_view_render_top(AppState* self, AppContext* ctx)
     }
 }
 
+// Draws a progress bar at (x, y) of size (w, h) with progress 0..1.
+static void draw_progress_bar(float x, float y, float w, float h, float progress)
+{
+    u32 border = ui_color_dim();
+    u32 track  = ui_color_panel();
+    u32 fill   = ui_color_gold();
+
+    // Border
+    C2D_DrawRectSolid(x - 1.0f, y - 1.0f, 0, w + 2.0f, h + 2.0f, border);
+    // Track
+    C2D_DrawRectSolid(x, y, 0, w, h, track);
+
+    // Fill
+    if (progress < 0.0f) progress = 0.0f;
+    if (progress > 1.0f) progress = 1.0f;
+    float fw = w * progress;
+    if (fw > 0.0f) C2D_DrawRectSolid(x, y, 0, fw, h, fill);
+}
+
 static void playback_view_render_bottom(AppState* self, AppContext* ctx)
 {
     (void)self;
 
-    printf("\x1b[1;1H");
-    printf("===========================\n");
-    printf("   Playback View\n");
-    printf("===========================\n");
-    printf("\n");
-    printf("  Filter: %s\n", image_filter_name(ctx->scene.selected_filter));
-    printf("  Frame:  %s\n", image_frame_name(ctx->scene.selected_frame));
-    printf("  Loop:   %s\n", ctx->audio.loop ? "Yes" : "No ");
+    ui_panel_bg_dark();
+    ui_panel_title("Playback View");
 
-    if (ctx->scene.music_selected) {
-        if (!ctx->audio.ndsp_ok) {
-            printf("\n  [NDSP INIT FAILED]\n");
-            printf("  Missing DSP firmware?\n");
-        } else {
-            const char* name = strrchr(ctx->scene.music_path, '/');
-            name = name ? name + 1 : ctx->scene.music_path;
-            printf("\n  Now playing: %s\n", name);
+    // Filter / Frame / Loop summary
+    ui_draw(14.0f, 36.0f, 0.0f, 0.40f, ui_color_dim(), "Filter:");
+    ui_draw(70.0f, 36.0f, 0.0f, 0.40f, ui_color_text(), "%s",
+            image_filter_name(ctx->scene.selected_filter));
 
-            float pos = audio_player_position_sec(&ctx->audio);
-            float dur = audio_player_duration_sec(&ctx->audio);
-            int p_m = (int)pos / 60, p_s = (int)pos % 60;
-            int d_m = (int)dur / 60, d_s = (int)dur % 60;
+    ui_draw(14.0f, 52.0f, 0.0f, 0.40f, ui_color_dim(), "Frame:");
+    ui_draw(70.0f, 52.0f, 0.0f, 0.40f, ui_color_text(), "%s",
+            image_frame_name(ctx->scene.selected_frame));
 
-            printf("  %02d:%02d / %02d:%02d  [%s]\n", p_m, p_s, d_m, d_s,
-                   ctx->audio.paused
-                       ? "PAUSED "
-                       : (audio_player_finished(&ctx->audio) ? "STOPPED" : "PLAYING"));
-        }
+    ui_draw(14.0f, 68.0f, 0.0f, 0.40f, ui_color_dim(), "Loop:");
+    ui_draw(70.0f, 68.0f, 0.0f, 0.40f,
+            ctx->audio.loop ? ui_color_gold() : ui_color_dim(),
+            "%s", ctx->audio.loop ? "On" : "Off");
+
+    // Now playing panel
+    float panel_y = 90.0f;
+    float panel_h = 90.0f;
+    C2D_DrawRectSolid(12.0f, panel_y, 0, BOTTOM_W - 24.0f, panel_h, ui_color_panel());
+
+    if (!ctx->scene.music_selected) {
+        ui_draw_centered(BOTTOM_W * 0.5f, panel_y + 28.0f, 0.0f, 0.50f,
+                         ui_color_dim(), "(no track selected)");
+        ui_draw_centered(BOTTOM_W * 0.5f, panel_y + 52.0f, 0.0f, 0.45f,
+                         ui_color_dim(), "00:00 / 00:00");
+    } else if (!ctx->audio.ndsp_ok) {
+        ui_draw_centered(BOTTOM_W * 0.5f, panel_y + 20.0f, 0.0f, 0.55f,
+                         ui_color_accent(), "[NDSP INIT FAILED]");
+        ui_draw_centered(BOTTOM_W * 0.5f, panel_y + 44.0f, 0.0f, 0.40f,
+                         ui_color_dim(), "Missing DSP firmware?");
     } else {
-        printf("\n  Now playing: (none)\n");
-        printf("  00:00 / 00:00\n");
+        const char* name = strrchr(ctx->scene.music_path, '/');
+        name = name ? name + 1 : ctx->scene.music_path;
+
+        ui_draw(22.0f, panel_y + 8.0f, 0.0f, 0.40f, ui_color_dim(),
+                "Now playing:");
+        ui_draw(22.0f, panel_y + 24.0f, 0.0f, 0.50f, ui_color_gold(),
+                "%s", name);
+
+        float pos = audio_player_position_sec(&ctx->audio);
+        float dur = audio_player_duration_sec(&ctx->audio);
+        int p_m = (int)pos / 60, p_s = (int)pos % 60;
+        int d_m = (int)dur / 60, d_s = (int)dur % 60;
+
+        // Progress bar
+        float progress = dur > 0.0f ? pos / dur : 0.0f;
+        draw_progress_bar(22.0f, panel_y + 52.0f, BOTTOM_W - 44.0f, 8.0f, progress);
+
+        // Time + status
+        const char* status = ctx->audio.paused
+            ? "PAUSED"
+            : (audio_player_finished(&ctx->audio) ? "STOPPED" : "PLAYING");
+        u32 status_color = ctx->audio.paused
+            ? ui_color_dim()
+            : (audio_player_finished(&ctx->audio) ? ui_color_accent() : ui_color_gold());
+
+        ui_draw(22.0f, panel_y + 68.0f, 0.0f, 0.40f, ui_color_text(),
+                "%02d:%02d / %02d:%02d", p_m, p_s, d_m, d_s);
+        ui_draw(BOTTOM_W - 80.0f, panel_y + 68.0f, 0.0f, 0.40f,
+                status_color, "%s", status);
     }
 
-    printf("\n");
-    printf("  [A]     Play / Pause\n");
-    printf("  [L/R]   Seek -/+ 5s\n");
-    printf("  [B]     Back to menu\n");
-    printf("  [Y]     Toggle loop\n");
-    printf("\n");
-    printf("---------------------------\n");
+    // Controls
+    float ctrl_y = 190.0f;
+    ui_draw( 12.0f, ctrl_y, 0.0f, 0.40f, ui_color_gold(), "[A] Play/Pause");
+    ui_draw(120.0f, ctrl_y, 0.0f, 0.40f, ui_color_gold(), "[L/R] Seek +/-5s");
+    ui_draw( 12.0f, ctrl_y + 14.0f, 0.0f, 0.40f, ui_color_gold(), "[Y] Toggle loop");
+    ui_draw(120.0f, ctrl_y + 14.0f, 0.0f, 0.40f, ui_color_gold(), "[B] Back to menu");
+
+    ui_panel_footer_hint("Playing your scene");
 }
 
 // -- Factory ----------------------------------------------------------------
