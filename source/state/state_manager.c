@@ -13,6 +13,7 @@
 #include "../states/state_frame_select.h"
 #include "../states/state_music_select.h"
 #include "../states/state_playback_view.h"
+#include "3ds/gfx.h"
 
 // ---------------------------------------------------------------------------
 // State registry — one AppState* per AppStateId
@@ -122,7 +123,7 @@ void state_manager_render_frame(AppContext* ctx)
         }
         gfxFlushBuffers();
         gspWaitForVBlank();
-        gfxSwapBuffers();
+        gfxScreenSwapBuffers(GFX_TOP, false);
 
         // Bottom screen still goes through citro2d in its own frame block.
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
