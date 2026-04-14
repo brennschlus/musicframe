@@ -11,6 +11,7 @@
 #include "app_context.h"
 #include "camera/hardware_camera.h"
 #include "state/state_manager.h"
+#include "ui/ui_text.h"
 
 // ---------------------------------------------------------------------------
 int main(int argc, char *argv[]) {
@@ -23,19 +24,18 @@ int main(int argc, char *argv[]) {
   C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
   C2D_Prepare();
 
-  // Bottom screen: text console (for debug and simple UI)
-  consoleInit(GFX_BOTTOM, NULL);
+  // Both screens are now citro2d render targets — no text console.
+  C3D_RenderTarget *top    = C2D_CreateScreenTarget(GFX_TOP,    GFX_LEFT);
+  C3D_RenderTarget *bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 
-  // Top screen: citro2d render target
-  C3D_RenderTarget *top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
-
-  gfxSetDoubleBuffering(GFX_TOP, true);
-  gfxSetDoubleBuffering(GFX_BOTTOM, false);
+  // Shared text renderer (uses the 3DS system font).
+  ui_text_init();
 
   AppContext ctx = {.running = true,
                     .current_state = STATE_NONE,
                     .next_state = STATE_MAIN_MENU,
                     .top_target = top,
+                    .bottom_target = bottom,
 
                     .scene = {
                         .selected_filter = FILTER_NONE,
@@ -67,8 +67,7 @@ int main(int argc, char *argv[]) {
     hidScanInput();
 
     state_manager_update(&ctx);
-    state_manager_render_top(&ctx);
-    state_manager_render_bottom(&ctx);
+    state_manager_render_frame(&ctx);
 
     state_manager_apply_transition(&ctx);
   }
@@ -80,6 +79,8 @@ int main(int argc, char *argv[]) {
 
   scene_model_cleanup(&ctx.scene);
   state_manager_shutdown();
+
+  ui_text_shutdown();
 
   C2D_Fini();
   C3D_Fini();

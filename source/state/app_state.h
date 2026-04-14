@@ -32,7 +32,8 @@ typedef struct AppState {
     // Access ctx->top_target for the citro2d render target.
     void (*render_top)(struct AppState* self, AppContext* ctx);
 
-    // Called every frame — output to bottom screen (console printf for now)
+    // Called every frame — draw on bottom screen using citro2d.
+    // Invoked inside C2D_SceneBegin(ctx->bottom_target) by the state manager.
     void (*render_bottom)(struct AppState* self, AppContext* ctx);
 } AppState;
 

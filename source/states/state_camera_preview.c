@@ -1,30 +1,20 @@
 #include "state_camera_preview.h"
 
 #include "../state/state_manager.h"
-#include <stdio.h>
+#include "../ui/ui_panel.h"
+#include "../ui/ui_text.h"
+#include <string.h>
 
 static void camera_preview_enter(AppState* self, AppContext* ctx)
 {
     (void)self;
 
-    consoleClear();
-    printf("\x1b[1;1H");
-    printf("===========================\n");
-    printf("   Camera Preview\n");
-    printf("===========================\n\n");
-
     if (!ctx->camera.initialized) {
-        printf("  [ERROR] Camera is not initialized\n");
-        printf("  [B] Back\n");
         return;
     }
 
     ctx->camera.preview_active = true;
     ctx->camera.frame_ready = false;
-
-    printf("  [A] Take Photo\n");
-    printf("  [B] Cancel / Back\n\n");
-    printf("  Camera preview mode\n");
 }
 
 static void camera_preview_exit(AppState* self, AppContext* ctx)
@@ -94,7 +84,38 @@ static void camera_preview_render_top(AppState* self, AppContext* ctx)
 static void camera_preview_render_bottom(AppState* self, AppContext* ctx)
 {
     (void)self;
-    (void)ctx;
+
+    ui_panel_bg_dark();
+    ui_panel_title("Camera Preview");
+
+    if (!ctx->camera.initialized) {
+        // Error panel
+        u32 clrErr = C2D_Color32(0xB8, 0x3A, 0x3A, 0xFF);
+        C2D_DrawRectSolid(20.0f, 60.0f, 0, BOTTOM_W - 40.0f, 60.0f, clrErr);
+        ui_draw_centered(BOTTOM_W * 0.5f, 72.0f, 0.0f, 0.55f,
+                         ui_color_text(), "Camera not initialized");
+        ui_draw_centered(BOTTOM_W * 0.5f, 92.0f, 0.0f, 0.45f,
+                         ui_color_text(), "Check hardware / permissions");
+        ui_panel_footer_hint("[B] Back");
+        return;
+    }
+
+    // Status indicator
+    const char* status = ctx->camera.frame_ready ? "LIVE" : "starting...";
+    u32 status_color = ctx->camera.frame_ready ? ui_color_gold() : ui_color_dim();
+
+    C2D_DrawRectSolid(20.0f, 50.0f, 0, BOTTOM_W - 40.0f, 44.0f, ui_color_panel());
+    ui_draw(32.0f, 58.0f, 0.0f, 0.50f, ui_color_text(), "Viewfinder:");
+    ui_draw(32.0f, 74.0f, 0.0f, 0.60f, status_color,    "%s", status);
+
+    // Controls
+    ui_draw(28.0f, 120.0f, 0.0f, 0.50f, ui_color_gold(), "[A]");
+    ui_draw(70.0f, 120.0f, 0.0f, 0.50f, ui_color_text(), "Take photo");
+
+    ui_draw(28.0f, 144.0f, 0.0f, 0.50f, ui_color_gold(), "[B]");
+    ui_draw(70.0f, 144.0f, 0.0f, 0.50f, ui_color_text(), "Cancel / back");
+
+    ui_panel_footer_hint("Point at subject, then press [A]");
 }
 
 static AppState s_camera_preview = {

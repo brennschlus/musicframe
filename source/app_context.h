@@ -8,10 +8,12 @@
 #include "camera/hardware_camera.h"
 
 // ---------------------------------------------------------------------------
-// Top screen dimensions (constant for all 3DS models)
+// Screen dimensions (constant for all 3DS models)
 // ---------------------------------------------------------------------------
-#define TOP_SCREEN_W 400
-#define TOP_SCREEN_H 240
+#define TOP_SCREEN_W    400
+#define TOP_SCREEN_H    240
+#define BOTTOM_SCREEN_W 320
+#define BOTTOM_SCREEN_H 240
 
 // ---------------------------------------------------------------------------
 // Application state identifiers
@@ -41,6 +43,7 @@ typedef struct {
 
     // Render targets (owned by main, shared read-only)
     C3D_RenderTarget* top_target;
+    C3D_RenderTarget* bottom_target;
 
     // Current scene (photo + filter + frame + music)
     SceneModel scene;

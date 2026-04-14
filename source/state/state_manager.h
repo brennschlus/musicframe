@@ -27,11 +27,9 @@ void state_manager_apply_transition(AppContext* ctx);
 // Delegate update to the current active state
 void state_manager_update(AppContext* ctx);
 
-// Render the top screen. Handles C3D_FrameBegin/End internally for normal
-// states, or gfxFlush/Swap for states with uses_direct_framebuffer == true.
-void state_manager_render_top(AppContext* ctx);
-
-// Delegate render_bottom to the current active state
-void state_manager_render_bottom(AppContext* ctx);
+// Render a whole frame (both screens). Handles the per-frame text buffer
+// reset, C3D_FrameBegin/End, and the special direct-framebuffer path used
+// by the camera preview state for the top screen.
+void state_manager_render_frame(AppContext* ctx);
 
 #endif // STATE_MANAGER_H
