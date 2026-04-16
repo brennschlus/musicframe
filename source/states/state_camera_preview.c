@@ -4,6 +4,7 @@
 #include "../ui/ui_panel.h"
 #include "../ui/ui_text.h"
 #include <string.h>
+#include "../state/transitions.h"
 
 static void camera_preview_enter(AppState* self, AppContext* ctx)
 {
@@ -30,7 +31,7 @@ static void camera_preview_update(AppState* self, AppContext* ctx)
     u32 kDown = hidKeysDown();
 
     if (kDown & KEY_B) {
-        state_manager_transition(ctx, STATE_MAIN_MENU);
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_B));
         return;
     }
 
@@ -52,7 +53,8 @@ static void camera_preview_update(AppState* self, AppContext* ctx)
         hw_camera_get_frame_rgba8(&ctx->camera, captured);
 
         scene_model_set_photo(&ctx->scene, captured);
-        state_manager_transition(ctx, STATE_PHOTO_REVIEW);
+        // Guard (frame_ready) уже проверен выше — шлём составной триггер
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_PHOTO_CAPTURED));
         return;
     }
 

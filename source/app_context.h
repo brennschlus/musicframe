@@ -6,6 +6,7 @@
 #include "scene/scene_model.h"
 #include "audio/audio_player.h"
 #include "camera/hardware_camera.h"
+#include "state/transitions.h"
 
 // ---------------------------------------------------------------------------
 // Screen dimensions (constant for all 3DS models)
@@ -15,20 +16,6 @@
 #define BOTTOM_SCREEN_W 320
 #define BOTTOM_SCREEN_H 240
 
-// ---------------------------------------------------------------------------
-// Application state identifiers
-// ---------------------------------------------------------------------------
-typedef enum {
-    STATE_NONE = 0,
-    STATE_MAIN_MENU,
-    STATE_CAMERA_PREVIEW,
-    STATE_PHOTO_REVIEW,
-    STATE_FILTER_SELECT,
-    STATE_FRAME_SELECT,
-    STATE_MUSIC_SELECT,
-    STATE_PLAYBACK_VIEW,
-    STATE_COUNT
-} AppStateId;
 
 // ---------------------------------------------------------------------------
 // Application context — passed to every state

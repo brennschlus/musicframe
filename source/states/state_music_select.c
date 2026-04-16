@@ -6,6 +6,7 @@
 #include "../ui/ui_text.h"
 #include <3ds.h>
 #include <stdio.h>
+#include "../state/transitions.h"
 
 // ---------------------------------------------------------------------------
 // Music Select screen
@@ -61,13 +62,13 @@ static void music_select_update(AppState* self, AppContext* ctx)
                                    ctx->scene.music_path,
                                    sizeof(ctx->scene.music_path));
             ctx->scene.music_selected = true;
-            state_manager_transition(ctx, STATE_PLAYBACK_VIEW);
+            // Guard (count > 0) проверен выше — шлём составной триггер
+            state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_TRACK_SELECTED));
         }
     }
 
-    if (kDown & KEY_B) {
-        state_manager_transition(ctx, STATE_FRAME_SELECT);
-    }
+    if (kDown & KEY_B)
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_B));
 }
 
 static void music_select_render_top(AppState* self, AppContext* ctx)

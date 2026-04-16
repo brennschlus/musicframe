@@ -5,6 +5,7 @@
 #include "../ui/ui_text.h"
 #include <3ds.h>
 #include <stdio.h>
+#include "../state/transitions.h"
 
 // ---------------------------------------------------------------------------
 // Filter Select screen
@@ -46,12 +47,10 @@ static void filter_select_update(AppState* self, AppContext* ctx)
         scene_model_apply_filter(&ctx->scene);
     }
 
-    if (kDown & KEY_A) {
-        state_manager_transition(ctx, STATE_FRAME_SELECT);
-    }
-    if (kDown & KEY_B) {
-        state_manager_transition(ctx, STATE_PHOTO_REVIEW);
-    }
+    if (kDown & KEY_A)
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_A));
+    if (kDown & KEY_B)
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_B));
 }
 
 static void filter_select_render_top(AppState* self, AppContext* ctx)
