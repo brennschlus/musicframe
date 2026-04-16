@@ -6,6 +6,7 @@
 #include "../ui/ui_text.h"
 #include <3ds.h>
 #include <stdio.h>
+#include "../state/transitions.h"
 
 // ---------------------------------------------------------------------------
 // Frame Select screen
@@ -40,12 +41,10 @@ static void frame_select_update(AppState* self, AppContext* ctx)
         ctx->scene.selected_frame = (ctx->scene.selected_frame + FRAME_COUNT - 1) % FRAME_COUNT;
     }
 
-    if (kDown & KEY_A) {
-        state_manager_transition(ctx, STATE_MUSIC_SELECT);
-    }
-    if (kDown & KEY_B) {
-        state_manager_transition(ctx, STATE_FILTER_SELECT);
-    }
+    if (kDown & KEY_A)
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_A));
+    if (kDown & KEY_B)
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_B));
 }
 
 static void frame_select_render_top(AppState* self, AppContext* ctx)

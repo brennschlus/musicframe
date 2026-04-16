@@ -12,6 +12,7 @@
 #include "camera/hardware_camera.h"
 #include "state/state_manager.h"
 #include "ui/ui_text.h"
+#include "state/transitions.h"
 
 // ---------------------------------------------------------------------------
 int main(int argc, char *argv[]) {

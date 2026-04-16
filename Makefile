@@ -25,6 +25,7 @@ GRAPHICS        := gfx
 #ROMFS          := romfs
 #GFXBUILD       := $(ROMFS)/gfx
 GFXBUILD        := $(BUILD)
+ZIG_LIB = zig/libtransitions.a
 
 #---------------------------------------------------------------------------------
 # Options for code generation
@@ -42,7 +43,7 @@ CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS  := -g $(ARCH)
 LDFLAGS   = -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS     := -lcitro2d -lcitro3d -lctru -lm
+LIBS     := -lcitro2d -lcitro3d -lctru -lm -L$(TOPDIR)/zig -ltransitions
 
 #---------------------------------------------------------------------------------
 # List of directories containing libraries
@@ -138,8 +139,15 @@ endif
 
 .PHONY: all clean
 
+
 #---------------------------------------------------------------------------------
 all: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
+	@echo "Building Zig library..."
+	@zig build-lib $(TOPDIR)/zig/transitions.zig \
+    -target arm-freestanding-eabihf \
+    -mcpu arm1136jf_s+vfp2 \
+    --name transitions \
+    -femit-bin=$(TOPDIR)/$(ZIG_LIB)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 $(BUILD):
@@ -158,7 +166,7 @@ endif
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(GFXBUILD)
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(GFXBUILD) $(CURDIR)/$(ZIG_LIB)
 
 #---------------------------------------------------------------------------------
 $(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	%.t3s

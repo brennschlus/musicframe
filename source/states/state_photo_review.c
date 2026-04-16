@@ -3,6 +3,7 @@
 #include "../ui/ui_panel.h"
 #include "../ui/ui_text.h"
 #include <3ds.h>
+#include "../state/transitions.h"
 
 // ---------------------------------------------------------------------------
 // Photo Review screen
@@ -30,13 +31,12 @@ static void photo_review_update(AppState* self, AppContext* ctx)
 
     u32 kDown = hidKeysDown();
 
-    if (kDown & KEY_A) {
-        state_manager_transition(ctx, STATE_FILTER_SELECT);
-    }
+    if (kDown & KEY_A)
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_A));
 
     if (kDown & KEY_B) {
-        scene_model_cleanup(&ctx->scene);
-        state_manager_transition(ctx, STATE_MAIN_MENU);
+        scene_model_cleanup(&ctx->scene);   // side effect остаётся здесь
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_B));
     }
 }
 

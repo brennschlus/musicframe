@@ -6,6 +6,7 @@
 #include "../ui/ui_text.h"
 #include <3ds.h>
 #include <string.h>
+#include "../state/transitions.h"
 
 // ---------------------------------------------------------------------------
 // Playback View screen
@@ -50,9 +51,9 @@ static void playback_view_update(AppState* self, AppContext* ctx)
     }
 
     if (kDown & KEY_B) {
-        audio_player_stop(&ctx->audio);
-        scene_model_cleanup(&ctx->scene);
-        state_manager_transition(ctx, STATE_MAIN_MENU);
+        audio_player_stop(&ctx->audio);     // side effect остаётся здесь
+        scene_model_cleanup(&ctx->scene);   // side effect остаётся здесь
+        state_manager_transition(ctx, app_next_state(ctx->current_state, TRIGGER_KEY_B));
     }
 
     if (ctx->audio.loop && audio_player_finished(&ctx->audio)) {
