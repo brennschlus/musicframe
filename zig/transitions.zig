@@ -26,8 +26,8 @@ pub const Trigger = enum(u8) {
     key_a,
     key_b,
     key_start,
-    photo_captured,  // KEY_A && camera.frame_ready
-    track_selected,  // KEY_A && library.count > 0
+    photo_captured, // KEY_A && camera.frame_ready
+    track_selected, // KEY_A && library.count > 0
 };
 
 // ---------------------------------------------------------------------------
@@ -35,31 +35,31 @@ pub const Trigger = enum(u8) {
 // ---------------------------------------------------------------------------
 
 const Transition = struct {
-    from:    AppStateId,
+    from: AppStateId,
     trigger: Trigger,
-    to:      AppStateId,
+    to: AppStateId,
 };
 
 const table = [_]Transition{
     // main_menu
-    .{ .from = .main_menu,       .trigger = .key_a,          .to = .camera_preview },
+    .{ .from = .main_menu, .trigger = .key_a, .to = .camera_preview },
     // camera_preview
-    .{ .from = .camera_preview,  .trigger = .photo_captured, .to = .photo_review   },
-    .{ .from = .camera_preview,  .trigger = .key_b,          .to = .main_menu      },
+    .{ .from = .camera_preview, .trigger = .photo_captured, .to = .photo_review },
+    .{ .from = .camera_preview, .trigger = .key_b, .to = .main_menu },
     // photo_review
-    .{ .from = .photo_review,    .trigger = .key_a,          .to = .filter_select  },
-    .{ .from = .photo_review,    .trigger = .key_b,          .to = .main_menu      },
+    .{ .from = .photo_review, .trigger = .key_a, .to = .filter_select },
+    .{ .from = .photo_review, .trigger = .key_b, .to = .main_menu },
     // filter_select
-    .{ .from = .filter_select,   .trigger = .key_a,          .to = .frame_select   },
-    .{ .from = .filter_select,   .trigger = .key_b,          .to = .photo_review   },
+    .{ .from = .filter_select, .trigger = .key_a, .to = .frame_select },
+    .{ .from = .filter_select, .trigger = .key_b, .to = .photo_review },
     // frame_select
-    .{ .from = .frame_select,    .trigger = .key_a,          .to = .music_select   },
-    .{ .from = .frame_select,    .trigger = .key_b,          .to = .filter_select  },
+    .{ .from = .frame_select, .trigger = .key_a, .to = .music_select },
+    .{ .from = .frame_select, .trigger = .key_b, .to = .filter_select },
     // music_select
-    .{ .from = .music_select,    .trigger = .track_selected, .to = .playback_view  },
-    .{ .from = .music_select,    .trigger = .key_b,          .to = .frame_select   },
+    .{ .from = .music_select, .trigger = .track_selected, .to = .playback_view },
+    .{ .from = .music_select, .trigger = .key_b, .to = .frame_select },
     // playback_view
-    .{ .from = .playback_view,   .trigger = .key_b,          .to = .main_menu      },
+    .{ .from = .playback_view, .trigger = .key_b, .to = .main_menu },
 };
 
 // ---------------------------------------------------------------------------
@@ -140,7 +140,7 @@ test "key_a without frame_ready never fires from platform side" {
 
 const std = @import("std");
 
-pub fn panic(_msg: []const u8, ...) noreturn {
-    _ = _msg;
+pub fn panic(msg: []const u8, _: ?*std.builtin.StackTrace, _: ?usize) noreturn {
+    _ = msg;
     while (true) {}
 }
