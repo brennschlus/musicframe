@@ -2,13 +2,12 @@
 //
 // Pure state machine for musicframe.
 // No allocations, no platform dependencies.
-// Build: zig build-lib transitions.zig -target arm-freestanding-eabi -mcpu arm1136jf_s
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-pub const AppStateId = enum(u8) {
+pub const AppStateId = enum(c_int) {
     none = 0,
     main_menu,
     camera_preview,
