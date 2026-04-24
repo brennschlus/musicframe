@@ -2,6 +2,11 @@
 
 A tiny 3DS project made for one thing only: **vibing in the moment**.
 
+
+<p align="center">
+  <img src="assets/PIC1.jpg" width="600" alt="musicframe running on a New Nintendo 3DS XL: a warm-filtered Polaroid-framed photo on the top screen, and the Playback View showing 'Now playing: brazilian.wav' on the bottom screen.">
+</p>
+
 ## Purpose
 
 The full flow is intentionally simple:
