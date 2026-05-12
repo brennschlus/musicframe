@@ -36,6 +36,10 @@ static void main_menu_update(AppState *self, AppContext *ctx) {
     state_manager_transition(ctx,
                              app_next_state(ctx->current_state, TRIGGER_KEY_SELECT));
 
+  if (kDown & KEY_Y)
+    state_manager_transition(ctx,
+                             app_next_state(ctx->current_state, TRIGGER_KEY_Y));
+
   if (kDown & KEY_START) {
     ctx->running = false;
   }
@@ -104,11 +108,13 @@ static void main_menu_render_bottom(AppState *self, AppContext *ctx) {
   ui_draw_centered(BOTTOM_W * 0.5f, 48.0f, 0.0f, 0.45f, ui_color_dim(),
                    "Atmospheric photo frame with music");
 
-  draw_menu_button(72.0f, "[A]      New Photo Scene",
+  draw_menu_button(58.0f,  "[A]      New Photo Scene",
                    "Take a picture & compose a scene");
-  draw_menu_button(116.0f, "[SELECT] My Moments",
+  draw_menu_button(102.0f, "[Y]      Photo Library",
+                   "Load a photo from sdmc:/DCIM/");
+  draw_menu_button(146.0f, "[SELECT] My Moments",
                    "Browse & load saved scenes");
-  draw_menu_button(160.0f, "[START]  Exit", "Leave the application");
+  draw_menu_button(190.0f, "[START]  Exit", "Leave the application");
 
   ui_panel_footer_hint("Choose an option");
 }

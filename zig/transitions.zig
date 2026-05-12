@@ -17,6 +17,7 @@ pub const AppStateId = enum(c_int) {
     music_select,
     playback_view,
     moment_browser,
+    photo_library,
 };
 
 /// Platform translates hardware input + conditions into these triggers.
@@ -30,6 +31,8 @@ pub const Trigger = enum(u8) {
     track_selected,  // KEY_A && library.count > 0
     key_select,      // open moment browser (main_menu) or inline save (playback_view)
     moment_selected, // moment loaded successfully in browser
+    key_y,           // open photo library from main_menu
+    photo_selected,  // photo from library loaded into scene → photo_review
 };
 
 // ---------------------------------------------------------------------------
@@ -63,9 +66,13 @@ const table = [_]Transition{
     // playback_view
     .{ .from = .playback_view,   .trigger = .key_b,           .to = .main_menu      },
     // moment_browser
-    .{ .from = .main_menu,       .trigger = .key_select,      .to = .moment_browser },
-    .{ .from = .moment_browser,  .trigger = .key_b,           .to = .main_menu      },
-    .{ .from = .moment_browser,  .trigger = .moment_selected, .to = .playback_view  },
+    .{ .from = .main_menu,      .trigger = .key_select,      .to = .moment_browser },
+    .{ .from = .moment_browser, .trigger = .key_b,           .to = .main_menu      },
+    .{ .from = .moment_browser, .trigger = .moment_selected, .to = .playback_view  },
+    // photo_library
+    .{ .from = .main_menu,      .trigger = .key_y,           .to = .photo_library  },
+    .{ .from = .photo_library,  .trigger = .key_b,           .to = .main_menu      },
+    .{ .from = .photo_library,  .trigger = .photo_selected,  .to = .photo_review   },
 };
 
 // ---------------------------------------------------------------------------
@@ -157,6 +164,19 @@ test "moment browser: open, load, back" {
 
     // moment_browser → main_menu on back
     s = app_next_state(.moment_browser, .key_b);
+    try t.expectEqual(AppStateId.main_menu, s);
+}
+
+test "photo library: open, select, back" {
+    const t = std.testing;
+
+    var s = app_next_state(.main_menu, .key_y);
+    try t.expectEqual(AppStateId.photo_library, s);
+
+    s = app_next_state(.photo_library, .photo_selected);
+    try t.expectEqual(AppStateId.photo_review, s);
+
+    s = app_next_state(.photo_library, .key_b);
     try t.expectEqual(AppStateId.main_menu, s);
 }
 
