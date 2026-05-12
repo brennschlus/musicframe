@@ -42,11 +42,12 @@ static void build_filename(char *buf, size_t buf_size)
     time_t unix  = (time_t)(ms / 1000) + EPOCH_2000_TO_UNIX;
     struct tm *t = gmtime(&unix);
     if (t) {
-        snprintf(buf, buf_size, "%04d%02d%02d_%02d%02d%02d.moment",
+        snprintf(buf, buf_size, "%04d%02d%02d_%02d%02d%02d_%03llu.moment",
                  t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-                 t->tm_hour, t->tm_min, t->tm_sec);
+                 t->tm_hour, t->tm_min, t->tm_sec,
+                 (unsigned long long)(ms % 1000));
     } else {
-        snprintf(buf, buf_size, "%llu.moment", (unsigned long long)(ms / 1000));
+        snprintf(buf, buf_size, "%llu.moment", (unsigned long long)ms);
     }
 }
 
