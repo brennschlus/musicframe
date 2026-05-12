@@ -217,9 +217,10 @@ void hw_camera_get_frame_rgba8(HardwareCamera* cam, ImageBuffer* out_img)
         for (int x = 0; x < w; x++) {
             u16 px = src[y * w + x];
 
-            u32 b = ((px >> 11) & 0x1F) << 3;
-            u32 g = ((px >> 5) & 0x3F) << 2;
-            u32 r = (px & 0x1F) << 3;
+            // Camera outputs BGR565: bits 0-4=Blue, 5-10=Green, 11-15=Red
+            u32 r = ((px >> 11) & 0x1F) << 3;
+            u32 g = ((px >>  5) & 0x3F) << 2;
+            u32 b = ( px        & 0x1F) << 3;
 
             dst[(h - 1 - y) * w + x] = (0xFFu << 24) | (b << 16) | (g << 8) | r;
         }

@@ -31,15 +31,22 @@ ImageBuffer *image_jpeg_load(const char *path, u16 max_w, u16 max_h)
     }
 
     if (dst_w == (u16)src_w && dst_h == (u16)src_h) {
-        // No scaling needed — copy directly (stb outputs RGBA8 LE matching our format)
-        for (u32 i = 0; i < (u32)src_w * src_h; i++) {
-            const unsigned char *p = raw + i * 4;
-            buf->pixels[i] = (u32)p[0] | ((u32)p[1] << 8) | ((u32)p[2] << 16) | ((u32)p[3] << 24);
+        // No scaling — copy with Y-flip: 3DS DCIM JPEGs are stored upside down
+        // (camera sensor orientation). The texture uploader expects row 0 = visual
+        // bottom so that its own Y-flip produces the correct on-screen orientation,
+        // matching the camera-capture pipeline.
+        for (u16 dy = 0; dy < dst_h; dy++) {
+            u16 sy = dst_h - 1 - dy;
+            for (u16 dx = 0; dx < dst_w; dx++) {
+                const unsigned char *p = raw + ((u32)sy * dst_w + dx) * 4;
+                buf->pixels[(u32)dy * dst_w + dx] =
+                    (u32)p[0] | ((u32)p[1] << 8) | ((u32)p[2] << 16) | ((u32)p[3] << 24);
+            }
         }
     } else {
-        // Nearest-neighbor downsample
+        // Nearest-neighbor downsample with Y-flip (same reasoning as above)
         for (u16 dy = 0; dy < dst_h; dy++) {
-            int sy = dy * src_h / dst_h;
+            int sy = (dst_h - 1 - dy) * src_h / dst_h;
             for (u16 dx = 0; dx < dst_w; dx++) {
                 int sx = dx * src_w / dst_w;
                 const unsigned char *p = raw + (sy * src_w + sx) * 4;
