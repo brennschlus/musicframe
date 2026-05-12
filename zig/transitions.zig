@@ -16,6 +16,7 @@ pub const AppStateId = enum(c_int) {
     frame_select,
     music_select,
     playback_view,
+    moment_browser,
 };
 
 /// Platform translates hardware input + conditions into these triggers.
@@ -25,8 +26,10 @@ pub const Trigger = enum(u8) {
     key_a,
     key_b,
     key_start,
-    photo_captured, // KEY_A && camera.frame_ready
-    track_selected, // KEY_A && library.count > 0
+    photo_captured,  // KEY_A && camera.frame_ready
+    track_selected,  // KEY_A && library.count > 0
+    key_select,      // open moment browser (main_menu) or inline save (playback_view)
+    moment_selected, // moment loaded successfully in browser
 };
 
 // ---------------------------------------------------------------------------
@@ -58,7 +61,11 @@ const table = [_]Transition{
     .{ .from = .music_select, .trigger = .track_selected, .to = .playback_view },
     .{ .from = .music_select, .trigger = .key_b, .to = .frame_select },
     // playback_view
-    .{ .from = .playback_view, .trigger = .key_b, .to = .main_menu },
+    .{ .from = .playback_view,   .trigger = .key_b,           .to = .main_menu      },
+    // moment_browser
+    .{ .from = .main_menu,       .trigger = .key_select,      .to = .moment_browser },
+    .{ .from = .moment_browser,  .trigger = .key_b,           .to = .main_menu      },
+    .{ .from = .moment_browser,  .trigger = .moment_selected, .to = .playback_view  },
 };
 
 // ---------------------------------------------------------------------------
@@ -134,6 +141,30 @@ test "key_a without frame_ready never fires from platform side" {
     const t = std.testing;
 
     const s = app_next_state(.camera_preview, .key_a);
+    try t.expectEqual(AppStateId.camera_preview, s);
+}
+
+test "moment browser: open, load, back" {
+    const t = std.testing;
+
+    // main_menu → moment_browser
+    var s = app_next_state(.main_menu, .key_select);
+    try t.expectEqual(AppStateId.moment_browser, s);
+
+    // moment_browser → playback_view on successful load
+    s = app_next_state(.moment_browser, .moment_selected);
+    try t.expectEqual(AppStateId.playback_view, s);
+
+    // moment_browser → main_menu on back
+    s = app_next_state(.moment_browser, .key_b);
+    try t.expectEqual(AppStateId.main_menu, s);
+}
+
+test "key_select has no effect outside main_menu" {
+    const t = std.testing;
+
+    // key_select in other states leaves state unchanged
+    const s = app_next_state(.camera_preview, .key_select);
     try t.expectEqual(AppStateId.camera_preview, s);
 }
 

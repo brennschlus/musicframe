@@ -13,6 +13,7 @@
 #include "../states/state_frame_select.h"
 #include "../states/state_music_select.h"
 #include "../states/state_playback_view.h"
+#include "../states/state_moment_browser.h"
 #include "3ds/gfx.h"
 
 // ---------------------------------------------------------------------------
@@ -36,7 +37,8 @@ void state_manager_init(void)
     s_states[STATE_FILTER_SELECT] = state_filter_select_create();
     s_states[STATE_FRAME_SELECT]  = state_frame_select_create();
     s_states[STATE_MUSIC_SELECT]  = state_music_select_create();
-    s_states[STATE_PLAYBACK_VIEW] = state_playback_view_create();
+    s_states[STATE_PLAYBACK_VIEW]  = state_playback_view_create();
+    s_states[STATE_MOMENT_BROWSER] = state_moment_browser_create();
 
     s_current = NULL;
 }

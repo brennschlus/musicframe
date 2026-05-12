@@ -17,6 +17,7 @@ typedef enum {
     STATE_FRAME_SELECT,
     STATE_MUSIC_SELECT,
     STATE_PLAYBACK_VIEW,
+    STATE_MOMENT_BROWSER,
     STATE_COUNT
 } AppStateId;
 
@@ -25,8 +26,10 @@ typedef enum {
     TRIGGER_KEY_A = 0,
     TRIGGER_KEY_B,
     TRIGGER_KEY_START,
-    TRIGGER_PHOTO_CAPTURED,  // KEY_A && camera.frame_ready
-    TRIGGER_TRACK_SELECTED,  // KEY_A && library.count > 0
+    TRIGGER_PHOTO_CAPTURED,   // KEY_A && camera.frame_ready
+    TRIGGER_TRACK_SELECTED,   // KEY_A && library.count > 0
+    TRIGGER_KEY_SELECT,       // open moment browser (main_menu) or inline save (playback_view)
+    TRIGGER_MOMENT_SELECTED,  // moment loaded successfully in browser
 } Trigger;
 
 /// Returns the next state for (current, trigger).

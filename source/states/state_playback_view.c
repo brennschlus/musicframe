@@ -1,4 +1,5 @@
 #include "state_playback_view.h"
+#include "../fs/moment_store.h"
 #include "../image/image_filters.h"
 #include "../image/image_frames.h"
 #include "../state/state_manager.h"
@@ -7,6 +8,10 @@
 #include <3ds.h>
 #include <string.h>
 #include "../state/transitions.h"
+
+#define SAVE_MSG_FRAMES 120  // ~2 s at 60 fps
+static bool s_save_active = false;
+static int  s_save_timer  = 0;
 
 // ---------------------------------------------------------------------------
 // Playback View screen
@@ -19,6 +24,8 @@
 static void playback_view_enter(AppState* self, AppContext* ctx)
 {
     (void)self;
+    s_save_active = false;
+    s_save_timer  = 0;
     if (ctx->scene.music_selected) {
         audio_player_load(&ctx->audio, ctx->scene.music_path);
         audio_player_play(&ctx->audio);
@@ -48,6 +55,17 @@ static void playback_view_update(AppState* self, AppContext* ctx)
     }
     if (kDown & KEY_Y) {
         audio_player_set_loop(&ctx->audio, !ctx->audio.loop);
+    }
+
+    if (kDown & KEY_SELECT) {
+        if (moment_store_save(&ctx->scene) == 0) {
+            s_save_active = true;
+            s_save_timer  = SAVE_MSG_FRAMES;
+        }
+    }
+
+    if (s_save_active) {
+        if (--s_save_timer <= 0) s_save_active = false;
     }
 
     if (kDown & KEY_B) {
@@ -165,11 +183,19 @@ static void playback_view_render_bottom(AppState* self, AppContext* ctx)
     }
 
     // Controls
-    float ctrl_y = 190.0f;
+    float ctrl_y = 188.0f;
     ui_draw( 12.0f, ctrl_y, 0.0f, 0.40f, ui_color_gold(), "[A] Play/Pause");
-    ui_draw(120.0f, ctrl_y, 0.0f, 0.40f, ui_color_gold(), "[L/R] Seek +/-5s");
-    ui_draw( 12.0f, ctrl_y + 14.0f, 0.0f, 0.40f, ui_color_gold(), "[Y] Toggle loop");
-    ui_draw(120.0f, ctrl_y + 14.0f, 0.0f, 0.40f, ui_color_gold(), "[B] Back to menu");
+    ui_draw(150.0f, ctrl_y, 0.0f, 0.40f, ui_color_gold(), "[L/R] Seek");
+    ui_draw( 12.0f, ctrl_y + 13.0f, 0.0f, 0.40f, ui_color_gold(), "[Y] Loop");
+    ui_draw(150.0f, ctrl_y + 13.0f, 0.0f, 0.40f, ui_color_gold(), "[B] Back");
+
+    if (s_save_active) {
+        ui_draw_centered(BOTTOM_W * 0.5f, ctrl_y, 0.0f, 0.50f,
+                         ui_color_gold(), "Scene saved!");
+    } else {
+        ui_draw_centered(BOTTOM_W * 0.5f, ctrl_y + 13.0f, 0.0f, 0.40f,
+                         ui_color_dim(), "[SELECT] Save scene");
+    }
 
     ui_panel_footer_hint("Playing your scene");
 }
