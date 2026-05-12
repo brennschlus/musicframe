@@ -14,6 +14,7 @@
 #include "../states/state_music_select.h"
 #include "../states/state_playback_view.h"
 #include "../states/state_moment_browser.h"
+#include "../states/state_photo_library.h"
 #include "3ds/gfx.h"
 
 // ---------------------------------------------------------------------------
@@ -39,6 +40,7 @@ void state_manager_init(void)
     s_states[STATE_MUSIC_SELECT]  = state_music_select_create();
     s_states[STATE_PLAYBACK_VIEW]  = state_playback_view_create();
     s_states[STATE_MOMENT_BROWSER] = state_moment_browser_create();
+    s_states[STATE_PHOTO_LIBRARY]  = state_photo_library_create();
 
     s_current = NULL;
 }
