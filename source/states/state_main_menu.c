@@ -110,11 +110,11 @@ static void main_menu_render_bottom(AppState *self, AppContext *ctx) {
 
   draw_menu_button(58.0f,  "[A]      New Photo Scene",
                    "Take a picture & compose a scene");
-  draw_menu_button(102.0f, "[Y]      Photo Library",
+  draw_menu_button(98.0f,  "[Y]      Photo Library",
                    "Load a photo from sdmc:/DCIM/");
-  draw_menu_button(146.0f, "[SELECT] My Moments",
+  draw_menu_button(138.0f, "[SELECT] My Moments",
                    "Browse & load saved scenes");
-  draw_menu_button(190.0f, "[START]  Exit", "Leave the application");
+  draw_menu_button(178.0f, "[START]  Exit", "Leave the application");
 
   ui_panel_footer_hint("Choose an option");
 }

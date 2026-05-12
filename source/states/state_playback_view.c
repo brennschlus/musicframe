@@ -137,7 +137,7 @@ static void playback_view_render_bottom(AppState* self, AppContext* ctx)
 
     // Now playing panel
     float panel_y = 90.0f;
-    float panel_h = 90.0f;
+    float panel_h = 80.0f;
     C2D_DrawRectSolid(12.0f, panel_y, 0, BOTTOM_W - 24.0f, panel_h, ui_color_panel());
 
     if (!ctx->scene.music_selected) {
@@ -183,17 +183,18 @@ static void playback_view_render_bottom(AppState* self, AppContext* ctx)
     }
 
     // Controls
-    float ctrl_y = 188.0f;
+    float ctrl_y = 178.0f;
     ui_draw( 12.0f, ctrl_y, 0.0f, 0.40f, ui_color_gold(), "[A] Play/Pause");
     ui_draw(150.0f, ctrl_y, 0.0f, 0.40f, ui_color_gold(), "[L/R] Seek");
     ui_draw( 12.0f, ctrl_y + 13.0f, 0.0f, 0.40f, ui_color_gold(), "[Y] Loop");
     ui_draw(150.0f, ctrl_y + 13.0f, 0.0f, 0.40f, ui_color_gold(), "[B] Back");
 
+    // Save hint on its own row, below controls
     if (s_save_active) {
-        ui_draw_centered(BOTTOM_W * 0.5f, ctrl_y, 0.0f, 0.50f,
+        ui_draw_centered(BOTTOM_W * 0.5f, ctrl_y + 26.0f, 0.0f, 0.45f,
                          ui_color_gold(), "Scene saved!");
     } else {
-        ui_draw_centered(BOTTOM_W * 0.5f, ctrl_y + 13.0f, 0.0f, 0.40f,
+        ui_draw_centered(BOTTOM_W * 0.5f, ctrl_y + 26.0f, 0.0f, 0.40f,
                          ui_color_dim(), "[SELECT] Save scene");
     }
 

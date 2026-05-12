@@ -62,8 +62,9 @@ static void photo_library_update(AppState *self, AppContext *ctx)
         }
 
         if (kDown & KEY_A) {
+            // Reserve 6px (3 top + 3 bottom) for the accent stripes in photo_review
             ImageBuffer *img = image_jpeg_load(
-                s_lib.entries[s_cursor].path, TOP_SCREEN_W, TOP_SCREEN_H);
+                s_lib.entries[s_cursor].path, TOP_SCREEN_W, TOP_SCREEN_H - 6);
             if (!img) {
                 s_load_failed = true;
             } else {
