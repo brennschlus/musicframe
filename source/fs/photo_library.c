@@ -23,7 +23,9 @@ int photo_library_scan(PhotoLibrary *lib)
 
     struct dirent *subdir_entry;
     while ((subdir_entry = readdir(root)) != NULL && lib->count < MAX_PHOTOS) {
-        if (subdir_entry->d_type != DT_DIR) continue;
+        // Accept DT_DIR and DT_UNKNOWN (FAT filesystems often return DT_UNKNOWN).
+        // opendir() is the authoritative check: if it fails the entry is not a dir.
+        if (subdir_entry->d_type != DT_DIR && subdir_entry->d_type != DT_UNKNOWN) continue;
         if (subdir_entry->d_name[0] == '.') continue; // skip . and ..
 
         // Use a larger intermediate buffer to satisfy the compiler
@@ -31,10 +33,11 @@ int photo_library_scan(PhotoLibrary *lib)
         snprintf(subdir_path, sizeof(subdir_path), "%s%s/", PHOTO_DIR, subdir_entry->d_name);
 
         DIR *sub = opendir(subdir_path);
-        if (!sub) continue;
+        if (!sub) continue; // entry is not a directory — skip
 
         struct dirent *file_entry;
         while ((file_entry = readdir(sub)) != NULL && lib->count < MAX_PHOTOS) {
+            // Skip confirmed directories; for DT_UNKNOWN let the extension check decide.
             if (file_entry->d_type == DT_DIR) continue;
             if (!has_jpg_extension(file_entry->d_name)) continue;
 
