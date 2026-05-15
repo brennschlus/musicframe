@@ -74,6 +74,11 @@ static void moment_browser_update(AppState *self, AppContext *ctx)
                     app_next_state(ctx->current_state, TRIGGER_MOMENT_SELECTED));
             }
         }
+
+        if (kDown & KEY_X) {
+            state_manager_transition(
+                ctx, app_next_state(ctx->current_state, TRIGGER_SHARE));
+        }
     }
 
     if (kDown & KEY_B)
@@ -170,7 +175,7 @@ static void moment_browser_render_bottom(AppState *self, AppContext *ctx)
     }
 
     char hint[64];
-    snprintf(hint, sizeof(hint), "[A] Load   [B] Back   %d/%d",
+    snprintf(hint, sizeof(hint), "[A] Load  [X] Share  [B] Back   %d/%d",
              s_cursor + 1, s_count);
     ui_panel_footer_hint(hint);
 }
