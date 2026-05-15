@@ -18,6 +18,9 @@ pub const AppStateId = enum(c_int) {
     playback_view,
     moment_browser,
     photo_library,
+    share_menu,
+    share_host,
+    share_client,
 };
 
 /// Platform translates hardware input + conditions into these triggers.
@@ -27,12 +30,15 @@ pub const Trigger = enum(u8) {
     key_a,
     key_b,
     key_start,
-    photo_captured,  // KEY_A && camera.frame_ready
-    track_selected,  // KEY_A && library.count > 0
-    key_select,      // open moment browser (main_menu) or inline save (playback_view)
-    moment_selected, // moment loaded successfully in browser
-    key_y,           // open photo library from main_menu
-    photo_selected,  // photo from library loaded into scene → photo_review
+    photo_captured,        // KEY_A && camera.frame_ready
+    track_selected,        // KEY_A && library.count > 0
+    key_select,            // open moment browser (main_menu) or inline save (playback_view)
+    moment_selected,       // moment loaded successfully in browser
+    key_y,                 // open photo library from main_menu
+    photo_selected,        // photo from library loaded into scene → photo_review
+    share,                 // KEY_X in moment_browser → share_menu
+    share_role_host,       // share_menu picked Host
+    share_role_discover,   // share_menu picked Discover
 };
 
 // ---------------------------------------------------------------------------
@@ -73,6 +79,13 @@ const table = [_]Transition{
     .{ .from = .main_menu,      .trigger = .key_y,           .to = .photo_library  },
     .{ .from = .photo_library,  .trigger = .key_b,           .to = .main_menu      },
     .{ .from = .photo_library,  .trigger = .photo_selected,  .to = .photo_review   },
+    // sharing (UDS local wireless)
+    .{ .from = .moment_browser, .trigger = .share,               .to = .share_menu     },
+    .{ .from = .share_menu,     .trigger = .share_role_host,     .to = .share_host     },
+    .{ .from = .share_menu,     .trigger = .share_role_discover, .to = .share_client   },
+    .{ .from = .share_menu,     .trigger = .key_b,               .to = .moment_browser },
+    .{ .from = .share_host,     .trigger = .key_b,               .to = .share_menu     },
+    .{ .from = .share_client,   .trigger = .key_b,               .to = .share_menu     },
 };
 
 // ---------------------------------------------------------------------------
@@ -177,6 +190,39 @@ test "photo library: open, select, back" {
     try t.expectEqual(AppStateId.photo_review, s);
 
     s = app_next_state(.photo_library, .key_b);
+    try t.expectEqual(AppStateId.main_menu, s);
+}
+
+test "share flow: browser → menu → host, back unwinds" {
+    const t = std.testing;
+
+    var s = app_next_state(.moment_browser, .share);
+    try t.expectEqual(AppStateId.share_menu, s);
+
+    s = app_next_state(s, .share_role_host);
+    try t.expectEqual(AppStateId.share_host, s);
+
+    s = app_next_state(s, .key_b);
+    try t.expectEqual(AppStateId.share_menu, s);
+
+    s = app_next_state(s, .key_b);
+    try t.expectEqual(AppStateId.moment_browser, s);
+}
+
+test "share flow: discover role and back" {
+    const t = std.testing;
+
+    var s = app_next_state(.share_menu, .share_role_discover);
+    try t.expectEqual(AppStateId.share_client, s);
+
+    s = app_next_state(s, .key_b);
+    try t.expectEqual(AppStateId.share_menu, s);
+}
+
+test "share trigger inert outside moment_browser" {
+    const t = std.testing;
+
+    const s = app_next_state(.main_menu, .share);
     try t.expectEqual(AppStateId.main_menu, s);
 }
 

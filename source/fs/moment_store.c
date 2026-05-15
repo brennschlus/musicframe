@@ -1,10 +1,13 @@
 #include "moment_store.h"
 #include "../image/image_buffer.h"
 #include "../image/image_filters.h"
+#include "music_library.h"
 #include <3ds.h>
+#include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -279,5 +282,144 @@ int moment_store_load(const char *filename, SceneModel *scene)
         scene->music_selected = false;
     }
 
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Byte-level helpers for sharing
+// ---------------------------------------------------------------------------
+
+bool moment_store_basename_safe(const char *name, const char *ext)
+{
+    if (!name || !*name || name[0] == '.') return false;
+
+    size_t len = strlen(name);
+    if (len > 60) return false; // fits in MomentInfo.filename + slack
+
+    // No path separators or relative-path tokens.
+    if (strchr(name, '/') || strchr(name, '\\')) return false;
+    if (strstr(name, "..")) return false;
+
+    // Allowed chars: letters, digits, '.', '_', '-'.
+    for (size_t i = 0; i < len; i++) {
+        unsigned char c = (unsigned char)name[i];
+        if (!isalnum(c) && c != '.' && c != '_' && c != '-') return false;
+    }
+
+    if (ext && *ext) {
+        size_t elen = strlen(ext);
+        if (len <= elen) return false;
+        if (strcasecmp(name + len - elen, ext) != 0) return false;
+    }
+    return true;
+}
+
+// Read a whole file at full_path into a malloc'd buffer.
+static int read_file(const char *full_path, uint8_t **out_buf, size_t *out_len)
+{
+    FILE *f = fopen(full_path, "rb");
+    if (!f) return -1;
+
+    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return -1; }
+    long sz = ftell(f);
+    if (sz < 0) { fclose(f); return -1; }
+    rewind(f);
+
+    uint8_t *buf = (uint8_t *)malloc((size_t)sz);
+    if (!buf) { fclose(f); return -1; }
+
+    if (fread(buf, 1, (size_t)sz, f) != (size_t)sz) {
+        free(buf);
+        fclose(f);
+        return -1;
+    }
+    fclose(f);
+
+    *out_buf = buf;
+    *out_len = (size_t)sz;
+    return 0;
+}
+
+int moment_store_read_bytes(const char *filename, uint8_t **out_buf, size_t *out_len)
+{
+    if (!filename || !out_buf || !out_len) return -1;
+    if (!moment_store_basename_safe(filename, ".moment")) return -1;
+
+    char full_path[256];
+    if ((size_t)snprintf(full_path, sizeof(full_path), "%s%s",
+                         MOMENTS_DIR, filename) >= sizeof(full_path)) {
+        return -1;
+    }
+    return read_file(full_path, out_buf, out_len);
+}
+
+int moment_store_write_bytes(const char *filename, const uint8_t *buf, size_t len)
+{
+    if (!filename || !buf) return -1;
+    if (!moment_store_basename_safe(filename, ".moment")) return -1;
+
+    // Validate magic + version before writing anything to disk.
+    if (len < 5) return -1;
+    if (memcmp(buf, MAGIC, 4) != 0) return -1;
+    if (buf[4] != VERSION) return -1;
+
+    mkdir(MOMENTS_DIR, 0777); // ignore EEXIST
+
+    char full_path[256];
+    if ((size_t)snprintf(full_path, sizeof(full_path), "%s%s",
+                         MOMENTS_DIR, filename) >= sizeof(full_path)) {
+        return -1;
+    }
+
+    FILE *f = fopen(full_path, "wb");
+    if (!f) return -1;
+    bool ok = fwrite(buf, 1, len, f) == len;
+    fclose(f);
+    if (!ok) {
+        remove(full_path);
+        return -1;
+    }
+    return 0;
+}
+
+int moment_store_resolve_wav(const char *basename, char *out_path, size_t cap)
+{
+    if (!basename || !out_path || cap == 0) return -1;
+    if (!moment_store_basename_safe(basename, ".wav")) return -1;
+    if ((size_t)snprintf(out_path, cap, "%s%s", MUSIC_DIR, basename) >= cap) {
+        return -1;
+    }
+    return 0;
+}
+
+int moment_store_read_wav(const char *basename, uint8_t **out_buf, size_t *out_len)
+{
+    char full_path[256];
+    if (moment_store_resolve_wav(basename, full_path, sizeof(full_path)) != 0) {
+        return -1;
+    }
+    return read_file(full_path, out_buf, out_len);
+}
+
+int moment_store_write_wav(const char *basename, const uint8_t *buf, size_t len)
+{
+    if (!buf || len < 12) return -1;
+    if (memcmp(buf, "RIFF", 4) != 0 || memcmp(buf + 8, "WAVE", 4) != 0) return -1;
+
+    char full_path[256];
+    if (moment_store_resolve_wav(basename, full_path, sizeof(full_path)) != 0) {
+        return -1;
+    }
+
+    mkdir(MUSIC_DIR, 0777); // ignore EEXIST
+
+    FILE *f = fopen(full_path, "wb");
+    if (!f) return -1;
+    bool ok = fwrite(buf, 1, len, f) == len;
+    fclose(f);
+    if (!ok) {
+        remove(full_path);
+        return -1;
+    }
     return 0;
 }

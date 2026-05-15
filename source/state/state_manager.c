@@ -15,6 +15,9 @@
 #include "../states/state_playback_view.h"
 #include "../states/state_moment_browser.h"
 #include "../states/state_photo_library.h"
+#include "../states/state_share_menu.h"
+#include "../states/state_share_host.h"
+#include "../states/state_share_client.h"
 #include "3ds/gfx.h"
 
 // ---------------------------------------------------------------------------
@@ -41,6 +44,9 @@ void state_manager_init(void)
     s_states[STATE_PLAYBACK_VIEW]  = state_playback_view_create();
     s_states[STATE_MOMENT_BROWSER] = state_moment_browser_create();
     s_states[STATE_PHOTO_LIBRARY]  = state_photo_library_create();
+    s_states[STATE_SHARE_MENU]     = state_share_menu_create();
+    s_states[STATE_SHARE_HOST]     = state_share_host_create();
+    s_states[STATE_SHARE_CLIENT]   = state_share_client_create();
 
     s_current = NULL;
 }
